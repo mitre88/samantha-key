@@ -1,0 +1,43 @@
+{
+  "app": "Samantha Key",
+  "bundle_id": "com.alexmitre.samanthakey",
+  "generated_at": "2026-05-24T21:06:25Z",
+  "composition_engine": "app-store-screenshots",
+  "renderer": "playwright-html-compositor",
+  "source_type": "real_simulator_captures",
+  "source_device": {
+    "simulator": "iPhone 17 Pro Max ASC",
+    "os": "iOS 26.4",
+    "display_type": "APP_IPHONE_69",
+    "dimensions": {
+      "width": 1320,
+      "height": 2868
+    }
+  },
+  "quality_gates_passed": true,
+  "ready_for_submission": true,
+  "locales": [
+    {
+      "locale": "en-US",
+      "device_class": "iphone-69",
+      "screenshots": [
+        "en-US/iphone-69/01.png",
+        "en-US/iphone-69/02.png",
+        "en-US/iphone-69/03.png",
+        "en-US/iphone-69/04.png",
+        "en-US/iphone-69/05.png"
+      ]
+    }
+  ],
+  "source_screenshots": [
+    "AppStore/Screenshots/raw/iphone-69/en-US/live.png",
+    "AppStore/Screenshots/raw/iphone-69/en-US/keyboard.png",
+    "AppStore/Screenshots/raw/iphone-69/en-US/handoff.png",
+    "AppStore/Screenshots/raw/iphone-69/en-US/setup.png",
+    "AppStore/Screenshots/raw/iphone-69/en-US/paywall.png"
+  ],
+  "notes": [
+    "The deck uses real simulator captures as source images and marketing compositions at the App Store iPhone 6.9/6.7 accepted size.",
+    "The app is iPhone-only via TARGETED_DEVICE_FAMILY=1, so no iPad screenshots are required for this target."
+  ]
+}

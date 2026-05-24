@@ -28,6 +28,7 @@
 		A92936B1517E9986F8C3B602 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9403E715B5BE5F5871D275 /* SettingsView.swift */; };
 		ABD55CE3569C346641ABE341 /* SamanthaKeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60D5B0D6F9180AAFB5F8242E /* SamanthaKeyApp.swift */; };
 		AF20C0111BED3AD51F9A7C93 /* KeyboardSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38EF411A01F8F2D97EAA408 /* KeyboardSetupView.swift */; };
+		B4A7FAE94CDF27526F714A3E /* ScreenshotShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5897F1E415FD96E14127165 /* ScreenshotShowcaseView.swift */; };
 		BE57B98C4538D1ADD47BFA0B /* SamanthaKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A38E114C3E391BEFB0A0B0BF /* SamanthaKeyboardView.swift */; };
 		C892CA1EEE2F028352DD413C /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FCF170128A625C141DF3F2B /* SplashView.swift */; };
 		CEF649CDCEF8C1F8739C4CEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6528206FE02CCD0E531CD3D8 /* PrivacyInfo.xcprivacy */; };
@@ -81,6 +82,7 @@
 		B47F47C5BF668152EEC5DC2C /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		B48DF4C20A33DFE6C4CABAE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B5605279A2D8179215285565 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
+		B5897F1E415FD96E14127165 /* ScreenshotShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotShowcaseView.swift; sourceTree = "<group>"; };
 		BB0BC3090894A6AAA9588995 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		BBE2132498E03D4D69ED096A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BE35AAB4C2D6693FCB2F47DD /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 				5E70297BB14F3CABC336AD05 /* OnboardingView.swift */,
 				439641ED3FFE177B4C1CF785 /* PaywallView.swift */,
 				187A35032816775447E7C4F8 /* RootView.swift */,
+				B5897F1E415FD96E14127165 /* ScreenshotShowcaseView.swift */,
 				EB9403E715B5BE5F5871D275 /* SettingsView.swift */,
 				8FCF170128A625C141DF3F2B /* SplashView.swift */,
 				F55389EA93454516E7E397E6 /* TranslatorView.swift */,
@@ -350,6 +353,7 @@
 				280A38ED8B28D38DE39281FE /* RealtimeWebRTCClient.swift in Sources */,
 				1897AF0EDB5FD30B227D2C84 /* RootView.swift in Sources */,
 				ABD55CE3569C346641ABE341 /* SamanthaKeyApp.swift in Sources */,
+				B4A7FAE94CDF27526F714A3E /* ScreenshotShowcaseView.swift in Sources */,
 				A92936B1517E9986F8C3B602 /* SettingsView.swift in Sources */,
 				C892CA1EEE2F028352DD413C /* SplashView.swift in Sources */,
 				4DC9221A9C126709CF6184E3 /* TranslationSession.swift in Sources */,

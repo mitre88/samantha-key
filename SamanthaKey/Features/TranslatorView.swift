@@ -350,7 +350,7 @@ struct TranslatorView: View {
     }
 }
 
-private struct VoiceSignalField: View {
+struct VoiceSignalField: View {
     let isListening: Bool
     let isError: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

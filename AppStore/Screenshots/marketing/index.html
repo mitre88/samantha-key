@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Samantha Key App Store Screenshot</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        width: 1320px;
+        height: 2868px;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+        background: #050505;
+      }
+
+      .slide {
+        position: relative;
+        width: 1320px;
+        height: 2868px;
+        overflow: hidden;
+        color: #f8fafc;
+      }
+
+      .slide.light {
+        color: #050505;
+        background:
+          radial-gradient(circle at 22% 16%, rgba(123, 232, 255, 0.42), transparent 28%),
+          radial-gradient(circle at 92% 18%, rgba(119, 255, 199, 0.30), transparent 28%),
+          linear-gradient(180deg, #f8fbfd 0%, #edf4f7 55%, #dfeaed 100%);
+      }
+
+      .slide.dark {
+        background:
+          radial-gradient(circle at 18% 18%, rgba(109, 234, 255, 0.28), transparent 28%),
+          radial-gradient(circle at 88% 66%, rgba(118, 255, 196, 0.18), transparent 34%),
+          linear-gradient(180deg, #050707 0%, #0b1112 52%, #010101 100%);
+      }
+
+      .slide.mist {
+        color: #061315;
+        background:
+          linear-gradient(115deg, rgba(255, 255, 255, 0.86), rgba(230, 247, 249, 0.82)),
+          radial-gradient(circle at 80% 20%, #8feefd 0%, transparent 26%),
+          radial-gradient(circle at 16% 76%, #93ffd1 0%, transparent 24%),
+          #eef6f8;
+      }
+
+      .top {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        top: 116px;
+        z-index: 3;
+      }
+
+      .label {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 24px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: inherit;
+        font-size: 30px;
+        font-weight: 750;
+        letter-spacing: 0;
+      }
+
+      .light .label,
+      .mist .label {
+        background: rgba(255, 255, 255, 0.74);
+        border-color: rgba(10, 20, 24, 0.08);
+      }
+
+      h1 {
+        margin: 42px 0 0;
+        font-size: 100px;
+        line-height: 0.95;
+        letter-spacing: 0;
+        font-weight: 880;
+        max-width: 1050px;
+      }
+
+      h1 .accent {
+        color: #63f7bd;
+      }
+
+      .light h1 .accent,
+      .mist h1 .accent {
+        color: #057f69;
+      }
+
+      .sub {
+        margin-top: 34px;
+        max-width: 860px;
+        color: rgba(248, 250, 252, 0.72);
+        font-size: 42px;
+        line-height: 1.2;
+        font-weight: 560;
+      }
+
+      .light .sub,
+      .mist .sub {
+        color: rgba(6, 19, 21, 0.58);
+      }
+
+      .phone {
+        position: absolute;
+        left: 168px;
+        right: 168px;
+        bottom: -134px;
+        height: 1960px;
+        border-radius: 86px;
+        overflow: hidden;
+        box-shadow: 0 72px 140px rgba(0, 0, 0, 0.42);
+        border: 10px solid rgba(255, 255, 255, 0.46);
+        background: #000;
+      }
+
+      .phone.tall {
+        bottom: -246px;
+        height: 2120px;
+      }
+
+      .phone img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+      }
+
+      .two-up {
+        position: absolute;
+        inset: auto 72px -148px 72px;
+        height: 1960px;
+      }
+
+      .two-up .phone {
+        position: absolute;
+        left: 380px;
+        right: auto;
+        bottom: 0;
+        width: 760px;
+        height: 1740px;
+        transform: rotate(3deg);
+      }
+
+      .two-up .phone.secondary {
+        left: 38px;
+        bottom: 136px;
+        transform: rotate(-5deg);
+        opacity: 0.92;
+        filter: saturate(0.96);
+      }
+
+      .orb {
+        position: absolute;
+        width: 410px;
+        height: 410px;
+        border-radius: 50%;
+        right: 58px;
+        top: 676px;
+        background:
+          radial-gradient(circle at 42% 36%, #ffffff 0%, #ffffff 36%, #eaf9fb 67%, rgba(100, 236, 255, 0.32) 100%);
+        box-shadow: 0 0 90px rgba(108, 239, 255, 0.55);
+        opacity: 0.78;
+      }
+
+      .orb::after {
+        content: "";
+        position: absolute;
+        inset: 90px;
+        border-radius: 50%;
+        border: 6px solid rgba(5, 5, 5, 0.78);
+        border-left-color: transparent;
+        border-right-color: transparent;
+      }
+
+      .privacy-card {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        bottom: 170px;
+        padding: 44px;
+        border-radius: 44px;
+        background: rgba(255, 255, 255, 0.74);
+        color: #061315;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.18);
+      }
+
+      .privacy-card b {
+        display: block;
+        font-size: 48px;
+        line-height: 1.05;
+      }
+
+      .privacy-card span {
+        display: block;
+        margin-top: 16px;
+        color: rgba(6, 19, 21, 0.56);
+        font-size: 31px;
+        line-height: 1.25;
+        font-weight: 560;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="root"></main>
+    <script>
+      const slides = [
+        {
+          theme: "dark",
+          label: "Voice translation keyboard",
+          title: "Speak once.<br />Type in <span class='accent'>any language.</span>",
+          sub: "Use voice to prepare translated text for Messages, Mail, Safari, Notes, and more.",
+          layout: "single",
+          phone: "../raw/iphone-69/en-US/keyboard.png",
+        },
+        {
+          theme: "light",
+          label: "Live translation",
+          title: "Listen live.<br /><span class='accent'>Reply clearly.</span>",
+          sub: "Samantha detects speech and turns it into translated text for your chosen language.",
+          layout: "single tall",
+          phone: "../raw/iphone-69/en-US/live.png",
+        },
+        {
+          theme: "mist",
+          label: "Keyboard handoff",
+          title: "Record in the app.<br /><span class='accent'>Insert from the keyboard.</span>",
+          sub: "Built around Apple’s keyboard rules: microphone capture happens in the companion app.",
+          layout: "two",
+          phone: "../raw/iphone-69/en-US/handoff.png",
+          secondary: "../raw/iphone-69/en-US/keyboard.png",
+        },
+        {
+          theme: "dark",
+          label: "Private by design",
+          title: "No saved audio.<br />No saved <span class='accent'>transcripts.</span>",
+          sub: "Only operational subscription and usage records are kept to protect access and cost.",
+          layout: "privacy",
+          phone: "../raw/iphone-69/en-US/setup.png",
+        },
+        {
+          theme: "light",
+          label: "3-day free trial",
+          title: "Try Pro free.<br /><span class='accent'>MXN $149/month.</span>",
+          sub: "Subscriptions are managed by Apple. Cancel anytime from App Store settings.",
+          layout: "single",
+          phone: "../raw/iphone-69/en-US/paywall.png",
+        },
+      ];
+
+      const params = new URLSearchParams(location.search);
+      const index = Math.max(0, Math.min(slides.length - 1, Number(params.get("slide") || 0)));
+      const slide = slides[index];
+      const root = document.getElementById("root");
+
+      function phone(path, extra = "") {
+        return `<div class="phone ${extra}"><img src="${path}" /></div>`;
+      }
+
+      let visual = phone(slide.phone, slide.layout.includes("tall") ? "tall" : "");
+      if (slide.layout === "two") {
+        visual = `
+          <div class="two-up">
+            ${phone(slide.secondary, "secondary")}
+            ${phone(slide.phone)}
+          </div>
+        `;
+      }
+      if (slide.layout === "privacy") {
+        visual = `
+          ${phone(slide.phone, "tall")}
+          <div class="privacy-card">
+            <b>Processed live for translation.</b>
+            <span>Samantha Key is built for in-the-moment typing, not audio storage.</span>
+          </div>
+        `;
+      }
+
+      root.innerHTML = `
+        <section class="slide ${slide.theme}">
+          <div class="orb"></div>
+          <div class="top">
+            <div class="label">${slide.label}</div>
+            <h1>${slide.title}</h1>
+            <p class="sub">${slide.sub}</p>
+          </div>
+          ${visual}
+        </section>
+      `;
+    </script>
+  </body>
+</html>

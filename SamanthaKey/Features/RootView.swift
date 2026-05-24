@@ -13,6 +13,24 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
+#if DEBUG
+            if let screenshotScreen = ScreenshotScene.requestedScreen {
+                ScreenshotShowcaseView(screen: screenshotScreen)
+                    .transition(.opacity)
+            } else if showSplash {
+                SplashView()
+                .transition(.opacity.combined(with: .scale(scale: 0.98)))
+            } else if !hasCompletedOnboarding {
+                OnboardingView {
+                    hasCompletedOnboarding = true
+                    AppGroupStore.selectedLanguage = outputLanguage
+                }
+            } else if !entitlementStore.hasAccess {
+                PaywallView()
+            } else {
+                TranslatorView(outputLanguage: outputLanguage)
+            }
+#else
             if showSplash {
                 SplashView()
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
@@ -26,9 +44,13 @@ struct RootView: View {
             } else {
                 TranslatorView(outputLanguage: outputLanguage)
             }
+#endif
         }
         .animation(.smooth(duration: 0.35), value: showSplash)
         .task {
+#if DEBUG
+            guard ScreenshotScene.requestedScreen == nil else { return }
+#endif
             try? await Task.sleep(for: .seconds(1.5))
             showSplash = false
         }

@@ -33,7 +33,7 @@ struct PaywallView: View {
     }
 }
 
-private struct PaywallHeader: View {
+struct PaywallHeader: View {
     var body: some View {
         VStack(spacing: AppSpacing.lg) {
             Label("paywall.native_badge", systemImage: "apple.logo")
