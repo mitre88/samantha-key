@@ -1,0 +1,7 @@
+project_id = "bkihgttwlfddnykagyvz"
+
+[functions.samantha-key-realtime-token]
+verify_jwt = false
+
+[functions.app-store-notifications]
+verify_jwt = false

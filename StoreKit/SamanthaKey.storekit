@@ -1,0 +1,104 @@
+{
+  "identifier" : "D1283A98-629F-4C57-A8D4-63F0478B6E8C",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_developerTeamID" : "8UTGJ9D5B6",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "es_MX",
+    "_storefront" : "MEX",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "33112001",
+      "localizations" : [
+        {
+          "description" : "Monthly access for Samantha Key.",
+          "displayName" : "Samantha Key Pro",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Acceso mensual para Samantha Key.",
+          "displayName" : "Samantha Key Pro",
+          "locale" : "es_MX"
+        }
+      ],
+      "name" : "Samantha Key Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "149.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6769849001",
+          "introductoryOffer" : {
+            "internalID" : "56F03065-F50C-4E75-96A6-A64FCFE28E3C",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Voice translation keyboard with a 3-day free trial.",
+              "displayName" : "Samantha Key Pro",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Teclado de traduccion por voz con 3 dias gratis.",
+              "displayName" : "Samantha Key Pro",
+              "locale" : "es_MX"
+            }
+          ],
+          "productID" : "samantha_key_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Samantha Key Monthly",
+          "subscriptionGroupID" : "33112001",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

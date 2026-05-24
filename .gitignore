@@ -1,0 +1,28 @@
+.DS_Store
+.env
+.env.*
+
+# Xcode
+DerivedData/
+build/
+*.xcarchive
+*.xcresult
+*.ipa
+*.dSYM.zip
+*.dSYM
+xcuserdata/
+*.xcuserstate
+
+# SwiftPM / XcodeGen
+.build/
+
+# Web
+web/node_modules/
+web/dist/
+
+# Supabase local state
+supabase/.temp/
+
+# duplicate local conflict copies
+**/* 2.swift
+**/* 3.swift
