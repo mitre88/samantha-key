@@ -53,6 +53,8 @@ supabase secrets set OPENAI_CLIENT_SECRET_TTL_SECONDS=120
 
 ## Web
 
+Production support site: https://samantha-key-support.vercel.app
+
 ```bash
 cd web
 npm install

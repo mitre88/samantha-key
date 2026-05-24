@@ -3,8 +3,8 @@ import SwiftUI
 
 struct PaywallView: View {
     @Environment(EntitlementStore.self) private var entitlementStore
-    private let privacyURL = URL(string: "https://samantha-key-mitre88.vercel.app/#privacy")!
-    private let termsURL = URL(string: "https://samantha-key-mitre88.vercel.app/#terms")!
+    private let privacyURL = URL(string: "https://samantha-key-support.vercel.app/#privacy")!
+    private let termsURL = URL(string: "https://samantha-key-support.vercel.app/#terms")!
 
     var body: some View {
         NavigationStack {

@@ -41,8 +41,8 @@ struct SettingsView: View {
                 Text("settings.privacy.note")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Link("settings.privacy.link", destination: URL(string: "https://samantha-key-mitre88.vercel.app/#privacy")!)
-                Link("settings.support.link", destination: URL(string: "https://samantha-key-mitre88.vercel.app/#support")!)
+                Link("settings.privacy.link", destination: URL(string: "https://samantha-key-support.vercel.app/#privacy")!)
+                Link("settings.support.link", destination: URL(string: "https://samantha-key-support.vercel.app/#support")!)
             }
         }
         .navigationTitle("settings.title")
