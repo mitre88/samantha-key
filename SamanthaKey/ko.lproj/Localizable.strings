@@ -28,6 +28,16 @@
 "paywall.line.trial" = "신규 구독자 3일 무료 체험";
 "paywall.line.realtime" = "OpenAI 기반 실시간 음성 번역";
 "paywall.line.privacy" = "오디오 또는 전사 기록 저장 없음";
+"paywall.review.heading" = "구독 세부 정보";
+"paywall.review.title.label" = "제목";
+"paywall.review.title.value" = "Samantha Key Pro";
+"paywall.review.length.label" = "기간";
+"paywall.review.length.value" = "1개월, 자동 갱신";
+"paywall.review.price.label" = "가격";
+"paywall.review.price.dynamic %@" = "체험 후 월 %@";
+"paywall.review.price.loading" = "Apple이 현지 월간 가격을 표시합니다";
+"paywall.review.trial.label" = "체험";
+"paywall.review.trial.value" = "자격 있는 신규 구독자 3일 무료";
 "paywall.start_trial" = "무료 체험 시작";
 "paywall.restore" = "구매 복원";
 "paywall.disclaimer" = "체험 후 구독은 갱신 24시간 전까지 취소하지 않으면 매월 갱신됩니다. Apple 계정에서 관리하거나 취소하세요.";

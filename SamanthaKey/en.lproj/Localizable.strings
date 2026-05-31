@@ -28,6 +28,16 @@
 "paywall.line.trial" = "3-day free trial for new subscribers";
 "paywall.line.realtime" = "Real-time voice translation powered by OpenAI";
 "paywall.line.privacy" = "No saved audio or transcript history";
+"paywall.review.heading" = "Subscription details";
+"paywall.review.title.label" = "Title";
+"paywall.review.title.value" = "Samantha Key Pro";
+"paywall.review.length.label" = "Length";
+"paywall.review.length.value" = "1 month, auto-renewing";
+"paywall.review.price.label" = "Price";
+"paywall.review.price.dynamic %@" = "%@ per month after trial";
+"paywall.review.price.loading" = "Apple will show the local monthly price";
+"paywall.review.trial.label" = "Trial";
+"paywall.review.trial.value" = "3 days free for eligible new subscribers";
 "paywall.start_trial" = "Start free trial";
 "paywall.restore" = "Restore purchases";
 "paywall.disclaimer" = "After the trial, the subscription renews monthly unless cancelled at least 24 hours before renewal. Manage or cancel in your Apple account.";

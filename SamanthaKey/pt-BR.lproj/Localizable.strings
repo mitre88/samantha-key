@@ -28,6 +28,16 @@
 "paywall.line.trial" = "3 dias de teste grátis para novos assinantes";
 "paywall.line.realtime" = "Tradução de voz em tempo real com OpenAI";
 "paywall.line.privacy" = "Sem histórico de áudio ou transcrições";
+"paywall.review.heading" = "Detalhes da assinatura";
+"paywall.review.title.label" = "Título";
+"paywall.review.title.value" = "Samantha Key Pro";
+"paywall.review.length.label" = "Duração";
+"paywall.review.length.value" = "1 mês, renovação automática";
+"paywall.review.price.label" = "Preço";
+"paywall.review.price.dynamic %@" = "%@ por mês após o teste";
+"paywall.review.price.loading" = "A Apple mostrará o preço mensal local";
+"paywall.review.trial.label" = "Teste";
+"paywall.review.trial.value" = "3 dias grátis para novos assinantes elegíveis";
 "paywall.start_trial" = "Iniciar teste grátis";
 "paywall.restore" = "Restaurar compras";
 "paywall.disclaimer" = "Depois do teste, a assinatura renova mensalmente salvo cancelamento pelo menos 24 horas antes. Gerencie ou cancele na sua conta Apple.";

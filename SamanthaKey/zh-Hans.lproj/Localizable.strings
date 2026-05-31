@@ -28,6 +28,16 @@
 "paywall.line.trial" = "新订阅用户可免费试用 3 天";
 "paywall.line.realtime" = "由 OpenAI 支持的实时语音翻译";
 "paywall.line.privacy" = "不保存音频或转写历史";
+"paywall.review.heading" = "订阅详情";
+"paywall.review.title.label" = "名称";
+"paywall.review.title.value" = "Samantha Key Pro";
+"paywall.review.length.label" = "周期";
+"paywall.review.length.value" = "1个月，自动续订";
+"paywall.review.price.label" = "价格";
+"paywall.review.price.dynamic %@" = "试用后每月 %@";
+"paywall.review.price.loading" = "Apple 会显示当地月度价格";
+"paywall.review.trial.label" = "试用";
+"paywall.review.trial.value" = "符合条件的新订阅用户可免费3天";
 "paywall.start_trial" = "开始免费试用";
 "paywall.restore" = "恢复购买";
 "paywall.disclaimer" = "试用结束后，订阅会每月自动续订，除非至少提前 24 小时取消。可在 Apple 账户中管理或取消。";

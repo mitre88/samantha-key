@@ -11,6 +11,9 @@ final class EntitlementStore {
     private(set) var hasAccess = false
     private(set) var isLoading = false
     var errorMessage: String?
+    var monthlyDisplayPrice: String? {
+        products.first?.displayPrice
+    }
 
     @ObservationIgnored
     nonisolated(unsafe) private var updatesTask: Task<Void, Never>?

@@ -34,6 +34,8 @@ struct PaywallView: View {
 }
 
 struct PaywallHeader: View {
+    @Environment(EntitlementStore.self) private var entitlementStore
+
     var body: some View {
         VStack(spacing: AppSpacing.lg) {
             Label("paywall.native_badge", systemImage: "apple.logo")
@@ -69,6 +71,8 @@ struct PaywallHeader: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            SubscriptionReviewSummary(displayPrice: entitlementStore.monthlyDisplayPrice)
+
             AppSection {
                 PaywallLine(icon: "checkmark.seal.fill", text: "paywall.line.trial")
                 PaywallLine(icon: "speaker.wave.3.fill", text: "paywall.line.realtime")
@@ -77,6 +81,51 @@ struct PaywallHeader: View {
         }
         .padding(.horizontal, AppSpacing.lg)
         .padding(.bottom, AppSpacing.md)
+    }
+}
+
+private struct SubscriptionReviewSummary: View {
+    let displayPrice: String?
+
+    var body: some View {
+        AppSection {
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                Text("paywall.review.heading")
+                    .font(.headline)
+
+                ReviewSummaryRow(label: "paywall.review.title.label", value: Text("paywall.review.title.value"))
+                ReviewSummaryRow(label: "paywall.review.length.label", value: Text("paywall.review.length.value"))
+                ReviewSummaryRow(label: "paywall.review.price.label", value: priceText)
+                ReviewSummaryRow(label: "paywall.review.trial.label", value: Text("paywall.review.trial.value"))
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var priceText: Text {
+        if let displayPrice {
+            return Text("paywall.review.price.dynamic \(displayPrice)")
+        }
+        return Text("paywall.review.price.loading")
+    }
+}
+
+private struct ReviewSummaryRow: View {
+    let label: LocalizedStringKey
+    let value: Text
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
+            Text(label)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppTheme.muted)
+                .frame(width: 92, alignment: .leading)
+
+            value
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 

@@ -28,6 +28,16 @@
 "paywall.line.trial" = "新規登録者は3日間無料";
 "paywall.line.realtime" = "OpenAIによるリアルタイム音声翻訳";
 "paywall.line.privacy" = "音声や文字起こし履歴を保存しません";
+"paywall.review.heading" = "サブスクリプション詳細";
+"paywall.review.title.label" = "名称";
+"paywall.review.title.value" = "Samantha Key Pro";
+"paywall.review.length.label" = "期間";
+"paywall.review.length.value" = "1か月、自動更新";
+"paywall.review.price.label" = "価格";
+"paywall.review.price.dynamic %@" = "トライアル後は月額%@";
+"paywall.review.price.loading" = "Apple が現地の月額料金を表示します";
+"paywall.review.trial.label" = "トライアル";
+"paywall.review.trial.value" = "対象の新規登録者は3日間無料";
 "paywall.start_trial" = "無料トライアルを開始";
 "paywall.restore" = "購入を復元";
 "paywall.disclaimer" = "トライアル後、24時間前までに解約しない限り毎月更新されます。Appleアカウントで管理または解約できます。";

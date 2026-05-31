@@ -2,6 +2,10 @@
 
 Premium iOS voice translation keyboard with a companion SwiftUI app, StoreKit subscription gating, Supabase token broker, and OpenAI Realtime speech-to-translated-text.
 
+The repo now also includes **Samantha Mac**, a macOS voice assistant target inspired by the Clicky-style flow:
+
+`voice in -> gpt-realtime-2 -> local tool call -> local Mac action -> spoken response`
+
 ## Product
 
 - App name: Samantha Key
@@ -17,6 +21,7 @@ Premium iOS voice translation keyboard with a companion SwiftUI app, StoreKit su
 
 - `SamanthaKey/` - SwiftUI iOS app with native WebRTC Realtime audio
 - `SamanthaKeyKeyboard/` - custom keyboard extension for translated text insertion
+- `SamanthaMac/` - macOS voice assistant with Realtime speech, local tools, CUA Driver integration, and approval gates
 - `Shared/` - App Group state and language model shared by app and keyboard
 - `supabase/` - Edge Functions and database migration
 - `web/` - Vercel support/privacy site
@@ -36,6 +41,41 @@ iOS custom keyboards cannot record from the microphone directly. Samantha Key us
 xcodegen generate
 xcodebuild -project SamanthaKey.xcodeproj -scheme SamanthaKey -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
+
+## Samantha Mac local assistant
+
+Samantha Mac is a separate macOS target for hands-free local computer control. It does not embed or commit API keys.
+
+Capabilities:
+
+- Low-latency speech session with OpenAI `gpt-realtime-2`.
+- Mic capture as 24 kHz PCM and realtime audio playback.
+- Local function tools: `shell_exec`, `open_app`, `read_screen`, and `list_apps`.
+- CUA Driver integration for app launch, app/window listing, and screen/accessibility-tree reading.
+- Approval gate before risky shell commands or unknown tools.
+- Menu bar control and Option-Command-Space hotkey.
+
+Setup:
+
+```bash
+xcodegen generate
+xcodebuild -project SamanthaKey.xcodeproj -scheme SamanthaMac -destination 'platform=macOS' build
+```
+
+Run the `SamanthaMac` scheme in Xcode, paste your OpenAI API key once, and press Save. The key is stored in local macOS Keychain under `com.alexmitre.samanthamac.openai`. You can also launch from a shell with `OPENAI_API_KEY` for development.
+
+Local action requirements:
+
+- Install and grant permissions to CUA Driver for screen/app automation.
+- Grant Microphone permission to Samantha Mac.
+- Grant Accessibility permission if you want the global hotkey and deeper UI inspection to work reliably.
+
+Safety model:
+
+- Read-only shell commands can run directly.
+- Mutating shell commands require explicit approval in the app UI.
+- `read_screen` is exposed as an explicit tool so screen reading happens only when the model asks for it.
+- The assistant is instructed not to claim an action is complete until the local tool returns success.
 
 ## StoreKit testing
 

@@ -7,14 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02628624B5B051F714E69533 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47F47C5BF668152EEC5DC2C /* AppLanguage.swift */; };
 		08E20D9707BFF5D9AF95847A /* TranslatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55389EA93454516E7E397E6 /* TranslatorView.swift */; };
 		09C304C478575D793BF7CC2B /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73B3B2BA465D0930542C80D /* AppTheme.swift */; };
 		14A5AC47BFB6B9DEFED33AE8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7C9F3A6DDC5591D336E8114E /* Localizable.strings */; };
+		1809015CB4F12F21085C428D /* ShellCommandPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16C98E99FCFC58B4B73F11C /* ShellCommandPolicy.swift */; };
 		1897AF0EDB5FD30B227D2C84 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187A35032816775447E7C4F8 /* RootView.swift */; };
 		22DEBE7BB9E5E2621679DA11 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47F47C5BF668152EEC5DC2C /* AppLanguage.swift */; };
+		25B4A55BEC5898052C9D262A /* LocalToolRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB917AD4AFF1709422646DF /* LocalToolRouter.swift */; };
 		280A38ED8B28D38DE39281FE /* RealtimeWebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272D5B37A49557E0A50C7702 /* RealtimeWebRTCClient.swift */; };
+		37F275109DDB743AF5175CFC /* AgentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D50B7063F20E2B08E92FD50 /* AgentModels.swift */; };
 		3CC8C7F6007F5582A179C45E /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E70297BB14F3CABC336AD05 /* OnboardingView.swift */; };
+		42FF546E1C3A9C82FC22E91A /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A32225B5BF3354414690EB /* AppGroupStore.swift */; };
 		4DC9221A9C126709CF6184E3 /* TranslationSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CDB6C996DE07AFEDE3CF05 /* TranslationSession.swift */; };
+		4F9FC10865468039D76523EE /* ProcessRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D19B2629659985528BBF25C /* ProcessRunner.swift */; };
+		5241B41D38F9357FE351BD9A /* RealtimeAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67F7E17B91A59EFD85032E4 /* RealtimeAudioPlayer.swift */; };
 		5CF2C0E0E545E0CA1403B130 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5605279A2D8179215285565 /* KeyboardViewController.swift */; };
 		6318048509D5E102EE01F112 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D4DA84A6606D31A1AAE3D62 /* Assets.xcassets */; };
 		68CD5A8EC2280BF50A27414B /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 4ED6CCF03794A52374CAEAC9 /* WebRTC */; };
@@ -23,8 +30,12 @@
 		6F96CAE2641BC461DC13D54F /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 439641ED3FFE177B4C1CF785 /* PaywallView.swift */; };
 		76C0A3C67EA4D7E4A68BAB26 /* BackendClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5205BDF234D62FCC5BB99F /* BackendClient.swift */; };
 		7C4E456C558DDD485677AC62 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A32225B5BF3354414690EB /* AppGroupStore.swift */; };
+		7DDDF73DE3B4FBD93BE0462B /* SamanthaMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 678425CE5785CD2502BE41FF /* SamanthaMacApp.swift */; };
+		7FBA7264D56C301C2B646E33 /* MicrophoneStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55E4E1A90F1C033058867F0D /* MicrophoneStreamer.swift */; };
+		81762C5EEAB6BD02C621C36E /* APIKeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C355FCAEA3BEBBF57B9410F /* APIKeyStore.swift */; };
 		92AC1858C660745864DFE651 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47F47C5BF668152EEC5DC2C /* AppLanguage.swift */; };
 		9562E282014B934A329914DD /* EntitlementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EB4686642903214BD80995 /* EntitlementStore.swift */; };
+		972E2247F3883AB6B2C2617D /* MacAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488AC77A80652B2B57873A35 /* MacAssistantView.swift */; };
 		A92936B1517E9986F8C3B602 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9403E715B5BE5F5871D275 /* SettingsView.swift */; };
 		ABD55CE3569C346641ABE341 /* SamanthaKeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60D5B0D6F9180AAFB5F8242E /* SamanthaKeyApp.swift */; };
 		AF20C0111BED3AD51F9A7C93 /* KeyboardSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38EF411A01F8F2D97EAA408 /* KeyboardSetupView.swift */; };
@@ -32,8 +43,10 @@
 		BE57B98C4538D1ADD47BFA0B /* SamanthaKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A38E114C3E391BEFB0A0B0BF /* SamanthaKeyboardView.swift */; };
 		C892CA1EEE2F028352DD413C /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FCF170128A625C141DF3F2B /* SplashView.swift */; };
 		CEF649CDCEF8C1F8739C4CEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6528206FE02CCD0E531CD3D8 /* PrivacyInfo.xcprivacy */; };
+		DA57D490EC4BCFF429A8011F /* MacVoiceAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D135B620969BA73844CCB5C8 /* MacVoiceAgent.swift */; };
 		E9AB949061BCADEAE3545661 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A32225B5BF3354414690EB /* AppGroupStore.swift */; };
 		F01C40960B2E4D1B8F877AAE /* SamanthaKeyKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1600031E3551A53D2A24CAC3 /* SamanthaKeyKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F052A75826B62B58517849B4 /* OpenAIRealtimeSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB22ED05F87E6EE57A6E6990 /* OpenAIRealtimeSocket.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,13 +78,21 @@
 		1600031E3551A53D2A24CAC3 /* SamanthaKeyKeyboard.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = SamanthaKeyKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1667AD898BE5913274528C91 /* SamanthaKeyKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SamanthaKeyKeyboard.entitlements; sourceTree = "<group>"; };
 		187A35032816775447E7C4F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		1C355FCAEA3BEBBF57B9410F /* APIKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyStore.swift; sourceTree = "<group>"; };
+		2496F7FF210FE15DAC9A75EE /* SamanthaMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SamanthaMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		272D5B37A49557E0A50C7702 /* RealtimeWebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeWebRTCClient.swift; sourceTree = "<group>"; };
+		2D19B2629659985528BBF25C /* ProcessRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessRunner.swift; sourceTree = "<group>"; };
 		323F75D9E3E41FA6BCD0BC39 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3E5205BDF234D62FCC5BB99F /* BackendClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendClient.swift; sourceTree = "<group>"; };
 		439641ED3FFE177B4C1CF785 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		488AC77A80652B2B57873A35 /* MacAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAssistantView.swift; sourceTree = "<group>"; };
+		4CB917AD4AFF1709422646DF /* LocalToolRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalToolRouter.swift; sourceTree = "<group>"; };
+		55E4E1A90F1C033058867F0D /* MicrophoneStreamer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneStreamer.swift; sourceTree = "<group>"; };
+		5D50B7063F20E2B08E92FD50 /* AgentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentModels.swift; sourceTree = "<group>"; };
 		5E70297BB14F3CABC336AD05 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		60D5B0D6F9180AAFB5F8242E /* SamanthaKeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamanthaKeyApp.swift; sourceTree = "<group>"; };
 		6528206FE02CCD0E531CD3D8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		678425CE5785CD2502BE41FF /* SamanthaMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamanthaMacApp.swift; sourceTree = "<group>"; };
 		679EA0FB1A3D87FB8463D3B0 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6816B950F8E3E1B8AC47E26A /* SamanthaKey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SamanthaKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A9F27B9B856A41742110462 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -79,21 +100,26 @@
 		8FCF170128A625C141DF3F2B /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		92CDB6C996DE07AFEDE3CF05 /* TranslationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSession.swift; sourceTree = "<group>"; };
 		A38E114C3E391BEFB0A0B0BF /* SamanthaKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamanthaKeyboardView.swift; sourceTree = "<group>"; };
+		B0F2BFB9AF4E35C4D4A04723 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B47F47C5BF668152EEC5DC2C /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		B48DF4C20A33DFE6C4CABAE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B5605279A2D8179215285565 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
 		B5897F1E415FD96E14127165 /* ScreenshotShowcaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotShowcaseView.swift; sourceTree = "<group>"; };
+		B67F7E17B91A59EFD85032E4 /* RealtimeAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeAudioPlayer.swift; sourceTree = "<group>"; };
 		BB0BC3090894A6AAA9588995 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		BBE2132498E03D4D69ED096A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BE35AAB4C2D6693FCB2F47DD /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C8A32225B5BF3354414690EB /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
 		C8EB4686642903214BD80995 /* EntitlementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementStore.swift; sourceTree = "<group>"; };
+		CB22ED05F87E6EE57A6E6990 /* OpenAIRealtimeSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIRealtimeSocket.swift; sourceTree = "<group>"; };
+		D135B620969BA73844CCB5C8 /* MacVoiceAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVoiceAgent.swift; sourceTree = "<group>"; };
 		D46DAA755AB6143F076DA0AB /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		D721E0FCDEDEFE823620F0E9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		D73B3B2BA465D0930542C80D /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		D86A6C3E682CB8624CF1A5AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D8E39A987000BB825D7BC736 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D9E6B1968786C953084E0201 /* SamanthaKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SamanthaKey.entitlements; sourceTree = "<group>"; };
+		E16C98E99FCFC58B4B73F11C /* ShellCommandPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellCommandPolicy.swift; sourceTree = "<group>"; };
 		EB9403E715B5BE5F5871D275 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F38EF411A01F8F2D97EAA408 /* KeyboardSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSetupView.swift; sourceTree = "<group>"; };
 		F55389EA93454516E7E397E6 /* TranslatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslatorView.swift; sourceTree = "<group>"; };
@@ -116,9 +142,25 @@
 			children = (
 				2A91CD78E81BFE3CFA1C0F8E /* SamanthaKey */,
 				5A92C68E4B6E66A36EF63370 /* SamanthaKeyKeyboard */,
+				AD349540112AE72028BD0FE2 /* SamanthaMac */,
 				BE5E8C4B634A454F16DA1540 /* Shared */,
 				2954E28622C26702082F9C15 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		205A8FA6167FE085209D446E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				1C355FCAEA3BEBBF57B9410F /* APIKeyStore.swift */,
+				4CB917AD4AFF1709422646DF /* LocalToolRouter.swift */,
+				D135B620969BA73844CCB5C8 /* MacVoiceAgent.swift */,
+				55E4E1A90F1C033058867F0D /* MicrophoneStreamer.swift */,
+				CB22ED05F87E6EE57A6E6990 /* OpenAIRealtimeSocket.swift */,
+				2D19B2629659985528BBF25C /* ProcessRunner.swift */,
+				B67F7E17B91A59EFD85032E4 /* RealtimeAudioPlayer.swift */,
+				E16C98E99FCFC58B4B73F11C /* ShellCommandPolicy.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		2954E28622C26702082F9C15 /* Products */ = {
@@ -126,6 +168,7 @@
 			children = (
 				6816B950F8E3E1B8AC47E26A /* SamanthaKey.app */,
 				1600031E3551A53D2A24CAC3 /* SamanthaKeyKeyboard.appex */,
+				2496F7FF210FE15DAC9A75EE /* SamanthaMac.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -147,6 +190,14 @@
 			path = SamanthaKey;
 			sourceTree = "<group>";
 		};
+		2D935A43EA0E8ABCD2731CE2 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5D50B7063F20E2B08E92FD50 /* AgentModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		306072C64FF5601D002420A1 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -156,6 +207,14 @@
 				92CDB6C996DE07AFEDE3CF05 /* TranslationSession.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		37BCE39A3DED33B3F538B271 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				488AC77A80652B2B57873A35 /* MacAssistantView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		5A92C68E4B6E66A36EF63370 /* SamanthaKeyKeyboard */ = {
@@ -168,6 +227,18 @@
 				1667AD898BE5913274528C91 /* SamanthaKeyKeyboard.entitlements */,
 			);
 			path = SamanthaKeyKeyboard;
+			sourceTree = "<group>";
+		};
+		AD349540112AE72028BD0FE2 /* SamanthaMac */ = {
+			isa = PBXGroup;
+			children = (
+				B0F2BFB9AF4E35C4D4A04723 /* Info.plist */,
+				678425CE5785CD2502BE41FF /* SamanthaMacApp.swift */,
+				2D935A43EA0E8ABCD2731CE2 /* Models */,
+				205A8FA6167FE085209D446E /* Services */,
+				37BCE39A3DED33B3F538B271 /* Views */,
+			);
+			path = SamanthaMac;
 			sourceTree = "<group>";
 		};
 		AF4DE460AAD9C58151E015FF /* DesignSystem */ = {
@@ -205,6 +276,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		317DF3CBA9505B17C6D80FB3 /* SamanthaMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5D41EAD02699155A8D7C24B8 /* Build configuration list for PBXNativeTarget "SamanthaMac" */;
+			buildPhases = (
+				8E17C0CF827D7E269940E8CB /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SamanthaMac;
+			packageProductDependencies = (
+			);
+			productName = SamanthaMac;
+			productReference = 2496F7FF210FE15DAC9A75EE /* SamanthaMac.app */;
+			productType = "com.apple.product-type.application";
+		};
 		C7BF6A29092D2409D45B2944 /* SamanthaKey */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 499A613038427A17AF9C5E18 /* Build configuration list for PBXNativeTarget "SamanthaKey" */;
@@ -255,6 +343,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					317DF3CBA9505B17C6D80FB3 = {
+						DevelopmentTeam = 8UTGJ9D5B6;
+						ProvisioningStyle = Automatic;
+					};
 					C7BF6A29092D2409D45B2944 = {
 						DevelopmentTeam = 8UTGJ9D5B6;
 					};
@@ -289,6 +381,7 @@
 			targets = (
 				C7BF6A29092D2409D45B2944 /* SamanthaKey */,
 				CC8108F5B3DD59FC9FB4F1C1 /* SamanthaKeyKeyboard */,
+				317DF3CBA9505B17C6D80FB3 /* SamanthaMac */,
 			);
 		};
 /* End PBXProject section */
@@ -361,6 +454,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8E17C0CF827D7E269940E8CB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81762C5EEAB6BD02C621C36E /* APIKeyStore.swift in Sources */,
+				37F275109DDB743AF5175CFC /* AgentModels.swift in Sources */,
+				42FF546E1C3A9C82FC22E91A /* AppGroupStore.swift in Sources */,
+				02628624B5B051F714E69533 /* AppLanguage.swift in Sources */,
+				25B4A55BEC5898052C9D262A /* LocalToolRouter.swift in Sources */,
+				972E2247F3883AB6B2C2617D /* MacAssistantView.swift in Sources */,
+				DA57D490EC4BCFF429A8011F /* MacVoiceAgent.swift in Sources */,
+				7FBA7264D56C301C2B646E33 /* MicrophoneStreamer.swift in Sources */,
+				F052A75826B62B58517849B4 /* OpenAIRealtimeSocket.swift in Sources */,
+				4F9FC10865468039D76523EE /* ProcessRunner.swift in Sources */,
+				5241B41D38F9357FE351BD9A /* RealtimeAudioPlayer.swift in Sources */,
+				7DDDF73DE3B4FBD93BE0462B /* SamanthaMacApp.swift in Sources */,
+				1809015CB4F12F21085C428D /* ShellCommandPolicy.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A0596CF75F016CF203B7E996 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -401,6 +514,24 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		11D63F922A9045C41A1F4C49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = SamanthaMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexmitre.samanthamac;
+				PRODUCT_NAME = "Samantha Mac";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		47EA9DCC6D5A159BFA7D9614 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -436,7 +567,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMPILATION_CACHING = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8UTGJ9D5B6;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -450,12 +581,12 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_USE_INTEGRATED_DRIVER = YES;
@@ -481,6 +612,24 @@
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		9F47B678BFE449F3D69DDE38 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = SamanthaMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexmitre.samanthamac;
+				PRODUCT_NAME = "Samantha Mac";
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -519,7 +668,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMPILATION_CACHING = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8UTGJ9D5B6;
 				EAGER_LINKING = YES;
@@ -540,12 +689,12 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -624,6 +773,15 @@
 			buildConfigurations = (
 				EAC68537E423D5D65C3FDA78 /* Debug */,
 				5F7BABA2BDD3BABAD23C917E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5D41EAD02699155A8D7C24B8 /* Build configuration list for PBXNativeTarget "SamanthaMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				11D63F922A9045C41A1F4C49 /* Debug */,
+				9F47B678BFE449F3D69DDE38 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
