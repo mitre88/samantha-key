@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 enum ToolAssessment: Sendable {
@@ -38,7 +39,7 @@ struct LocalToolRouter: Sendable {
         [
             "type": "function",
             "name": "open_app",
-            "description": "Launch a macOS app without intentionally stealing focus by using cua-driver launch_app.",
+            "description": "Launch a macOS app and bring it forward for the user.",
             "parameters": [
                 "type": "object",
                 "properties": [
@@ -136,7 +137,11 @@ struct LocalToolRouter: Sendable {
         guard payload.isEmpty == false else {
             return ToolExecutionOutput(ok: false, text: "Missing app name or bundle_id.")
         }
-        return try await runCUA(tool: "launch_app", payload: payload)
+        let result = try await runCUA(tool: "launch_app", payload: payload)
+        if result.ok {
+            await bringLaunchedAppForward(from: result.text, fallbackBundleID: payload["bundle_id"] as? String)
+        }
+        return result
     }
 
     private func readScreen(arguments: [String: Any]) async throws -> ToolExecutionOutput {
@@ -156,6 +161,34 @@ struct LocalToolRouter: Sendable {
             timeout: 20
         )
         return ToolExecutionOutput(ok: result.exitCode == 0, text: result.output.isEmpty ? "Exit \(result.exitCode)" : result.output)
+    }
+
+    private func bringLaunchedAppForward(from output: String, fallbackBundleID: String?) async {
+        let appReference = parseLaunchedAppReference(from: output, fallbackBundleID: fallbackBundleID)
+        await MainActor.run {
+            let app: NSRunningApplication?
+            if let pid = appReference.pid {
+                app = NSRunningApplication(processIdentifier: pid)
+            } else if let bundleID = appReference.bundleID {
+                app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first
+            } else {
+                app = nil
+            }
+
+            guard let app else { return }
+            app.unhide()
+            app.activate(options: [.activateAllWindows])
+        }
+    }
+
+    private func parseLaunchedAppReference(from output: String, fallbackBundleID: String?) -> (pid: pid_t?, bundleID: String?) {
+        guard let data = output.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return (nil, fallbackBundleID)
+        }
+        let pid = (object["pid"] as? NSNumber)?.int32Value
+        let bundleID = object["bundle_id"] as? String
+        return (pid, bundleID ?? fallbackBundleID)
     }
 }
 
