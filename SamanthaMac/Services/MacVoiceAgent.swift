@@ -75,9 +75,9 @@ final class MacVoiceAgent {
 
     func start() async {
         guard socket == nil else { return }
-        guard let apiKey = APIKeyStore.load() ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"],
+        guard let apiKey = APIKeyStore.resolvedKey(),
               apiKey.isEmpty == false else {
-            fail("Add an OpenAI API key first. It will be stored locally in Keychain.")
+            fail("OpenAI API key was not found in Keychain or local configuration.")
             return
         }
 
