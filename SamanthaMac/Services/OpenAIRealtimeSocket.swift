@@ -58,12 +58,21 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
                             "rate": 24_000
                         ],
                         "turn_detection": [
-                            "type": "semantic_vad"
+                            "type": "server_vad",
+                            "threshold": 0.5,
+                            "prefix_padding_ms": 300,
+                            "silence_duration_ms": 700,
+                            "create_response": true,
+                            "interrupt_response": true
+                        ],
+                        "transcription": [
+                            "model": "gpt-4o-mini-transcribe"
                         ]
                     ],
                     "output": [
                         "format": [
-                            "type": "audio/pcm"
+                            "type": "audio/pcm",
+                            "rate": 24_000
                         ],
                         "voice": "marin"
                     ]
@@ -80,6 +89,11 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
             "type": "input_audio_buffer.append",
             "audio": data.base64EncodedString()
         ])
+    }
+
+    func finishTurn() async throws {
+        try await sendObject(["type": "input_audio_buffer.commit"])
+        try await sendObject(["type": "response.create"])
     }
 
     func sendFunctionOutput(callID: String, output: String) async throws {

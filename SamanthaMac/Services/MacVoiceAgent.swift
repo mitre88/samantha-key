@@ -21,6 +21,8 @@ final class MacVoiceAgent {
     @ObservationIgnored private var handledCallIDs = Set<String>()
     @ObservationIgnored private var hotkeyMonitors: [Any] = []
     @ObservationIgnored private var lastFailureMessage: String?
+    @ObservationIgnored private var audioChunkCount = 0
+    @ObservationIgnored private var didReceiveSpeech = false
 
     var isRunning: Bool {
         if case .listening = state { return true }
@@ -67,7 +69,9 @@ final class MacVoiceAgent {
     }
 
     func toggleListening() async {
-        if isRunning || pendingApproval != nil {
+        if case .listening = state {
+            await finishCurrentTurn()
+        } else if isRunning || pendingApproval != nil {
             stop()
         } else {
             await start()
@@ -87,6 +91,8 @@ final class MacVoiceAgent {
             lastFailureMessage = nil
             assistantDraft = ""
             userDraft = ""
+            audioChunkCount = 0
+            didReceiveSpeech = false
             handledCallIDs.removeAll()
             append(.info, "Connecting to gpt-realtime-2.")
 
@@ -164,7 +170,22 @@ final class MacVoiceAgent {
     private func sendAudio(_ data: Data) async {
         guard socket != nil else { return }
         do {
+            audioChunkCount += 1
+            if audioChunkCount == 1 {
+                append(.info, "Microphone audio is streaming.")
+            }
             try await socket?.sendAudio(data)
+        } catch {
+            fail(error.localizedDescription)
+        }
+    }
+
+    private func finishCurrentTurn() async {
+        microphone.stop()
+        userDraft = "Processing..."
+        append(.info, "Finishing turn.")
+        do {
+            try await socket?.finishTurn()
         } catch {
             fail(error.localizedDescription)
         }
@@ -179,9 +200,16 @@ final class MacVoiceAgent {
         case "session.created", "session.updated":
             break
         case "input_audio_buffer.speech_started":
+            didReceiveSpeech = true
             userDraft = "Listening..."
+            append(.info, "Speech detected.")
         case "input_audio_buffer.speech_stopped":
             userDraft = "Processing..."
+            append(.info, "Speech stopped. Waiting for response.")
+        case "input_audio_buffer.committed":
+            append(.info, "Audio committed.")
+        case "response.created":
+            append(.info, "Realtime response started.")
         case "conversation.item.input_audio_transcription.completed", "input_audio_buffer.transcription.completed":
             if let transcript = event["transcript"] as? String, transcript.isEmpty == false {
                 userDraft = ""
@@ -200,15 +228,18 @@ final class MacVoiceAgent {
             flushAssistantDraft(fallback: event["transcript"] as? String)
         case "response.function_call_arguments.done":
             if let call = functionCall(from: event) {
+                append(.tool, "Tool requested: \(call.name).")
                 Task { await handleFunctionCall(call) }
             }
         case "response.output_item.done":
             if let item = event["item"] as? [String: Any], let call = functionCall(fromOutputItem: item) {
+                append(.tool, "Tool requested: \(call.name).")
                 Task { await handleFunctionCall(call) }
             }
         case "response.done":
             flushAssistantDraft(fallback: nil)
             for call in functionCalls(fromResponseDoneEvent: event) {
+                append(.tool, "Tool requested: \(call.name).")
                 Task { await handleFunctionCall(call) }
             }
         case "error":
