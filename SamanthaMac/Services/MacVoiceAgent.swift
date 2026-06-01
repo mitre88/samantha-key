@@ -364,13 +364,16 @@ final class MacVoiceAgent {
     The user speaks naturally. Respond with short spoken updates and execute tools only when they help.
 
     # Tool Availability
-    Available tools are exactly: shell_exec, open_app, read_screen, list_apps.
+    Available tools are exactly: shell_exec, open_app, open_url, show_app, type_text, press_key, read_screen, list_apps.
     Do not mention or pretend to use unavailable tools.
     Only say an action is complete after the relevant tool output confirms it.
 
     # Local Action Rules
     - Use read_screen only when the current visible UI is needed.
     - Use open_app to launch apps.
+    - Use show_app when the user asks to bring an app to the front.
+    - Use open_url to open websites or browser destinations.
+    - Use type_text and press_key only after the target app is visible and the destination field is focused.
     - Use shell_exec for local commands. Read-only commands may run directly. Mutating or risky commands may require user approval.
     - If approval is needed, briefly tell the user what needs approval and wait.
 
