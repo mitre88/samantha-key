@@ -20,6 +20,7 @@ final class MacVoiceAgent {
     @ObservationIgnored private var pendingCall: PendingFunctionCall?
     @ObservationIgnored private var handledCallIDs = Set<String>()
     @ObservationIgnored private var hotkeyMonitors: [Any] = []
+    @ObservationIgnored private var lastFailureMessage: String?
 
     var isRunning: Bool {
         if case .listening = state { return true }
@@ -83,6 +84,7 @@ final class MacVoiceAgent {
 
         do {
             state = .connecting
+            lastFailureMessage = nil
             assistantDraft = ""
             userDraft = ""
             handledCallIDs.removeAll()
@@ -160,6 +162,7 @@ final class MacVoiceAgent {
     }
 
     private func sendAudio(_ data: Data) async {
+        guard socket != nil else { return }
         do {
             try await socket?.sendAudio(data)
         } catch {
@@ -266,8 +269,11 @@ final class MacVoiceAgent {
     }
 
     private func fail(_ message: String) {
+        guard lastFailureMessage != message else { return }
+        lastFailureMessage = message
         state = .error(message)
         append(.error, message)
+        stop()
     }
 
     private func stableSafetyIdentifier() -> String {

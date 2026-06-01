@@ -50,13 +50,20 @@ enum APIKeyStore {
 
         query[kSecValueData as String] = data
         let addStatus = SecItemAdd(query as CFDictionary, nil)
+        if addStatus == errSecDuplicateItem {
+            let retryStatus = SecItemUpdate(baseQuery() as CFDictionary, attributes as CFDictionary)
+            guard retryStatus == errSecSuccess else {
+                throw KeychainError.unableToSave(retryStatus)
+            }
+            return
+        }
         guard addStatus == errSecSuccess else {
             throw KeychainError.unableToSave(addStatus)
         }
     }
 
     static var maskedValue: String {
-        guard let key = resolvedKey(), key.count > 14 else { return "" }
+        guard let key = load(), key.count > 14 else { return "" }
         return "\(key.prefix(7))...\(key.suffix(4))"
     }
 
