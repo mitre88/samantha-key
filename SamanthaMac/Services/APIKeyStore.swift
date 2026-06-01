@@ -16,7 +16,11 @@ enum APIKeyStore {
               let data = result as? Data,
               let key = String(data: data, encoding: .utf8),
               key.isEmpty == false else { return nil }
-        return key
+        guard let validKey = validatedKey(key) else {
+            delete()
+            return nil
+        }
+        return validKey
     }
 
     static func resolvedKey() -> String? {
@@ -38,8 +42,10 @@ enum APIKeyStore {
     }
 
     static func save(_ rawValue: String) throws {
-        let key = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard key.isEmpty == false, key.contains("...") == false else { return }
+        guard rawValue.contains("...") == false else { return }
+        guard let key = validatedKey(rawValue) else {
+            throw KeychainError.invalidKey
+        }
 
         let data = Data(key.utf8)
         var query = baseQuery()
@@ -65,6 +71,10 @@ enum APIKeyStore {
     static var maskedValue: String {
         guard let key = load(), key.count > 14 else { return "" }
         return "\(key.prefix(7))...\(key.suffix(4))"
+    }
+
+    static func delete() {
+        SecItemDelete(baseQuery() as CFDictionary)
     }
 
     private static func baseQuery() -> [String: Any] {
@@ -125,7 +135,7 @@ enum APIKeyStore {
     }
 
     private static func firstOpenAIKey(in text: String) -> String? {
-        let pattern = #"sk-(?:proj-)?[A-Za-z0-9_-]{20,}"#
+        let pattern = #"sk-proj-[A-Za-z0-9_-]{20,}"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
         let range = NSRange(text.startIndex..<text.endIndex, in: text)
         guard let match = regex.firstMatch(in: text, range: range),
@@ -138,16 +148,18 @@ enum APIKeyStore {
         let key = rawValue
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: CharacterSet(charactersIn: "\"',"))
-        guard key.hasPrefix("sk-"), key.count > 24, key.contains("YOUR_") == false else { return nil }
+        guard key.hasPrefix("sk-proj-"), key.count > 32, key.contains("YOUR_") == false else { return nil }
         return key
     }
 }
 
 enum KeychainError: LocalizedError {
+    case invalidKey
     case unableToSave(OSStatus)
 
     var errorDescription: String? {
         switch self {
+        case .invalidKey: "Use a valid OpenAI project API key that starts with sk-proj-."
         case .unableToSave(let status): "Could not save the API key in Keychain. OSStatus \(status)."
         }
     }

@@ -78,7 +78,7 @@ final class MacVoiceAgent {
         guard socket == nil else { return }
         guard let apiKey = APIKeyStore.resolvedKey(),
               apiKey.isEmpty == false else {
-            fail("OpenAI API key was not found in Keychain or local configuration.")
+            fail("OpenAI API key was not found. Save a valid key that starts with sk-proj-.")
             return
         }
 
