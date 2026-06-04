@@ -22,6 +22,7 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
     private var _dataChannel: RTCDataChannel?
     private var _pendingSessionUpdate: [String: Any]?
     private var _onEvent: (@MainActor @Sendable (String) -> Void)?
+    private var _onDiagnostic: (@MainActor @Sendable (String) -> Void)?
     private var _onFailure: (@MainActor @Sendable (String) -> Void)?
     private var _isDisconnecting = false
 
@@ -34,16 +35,19 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
         endpoint: URL,
         outputLanguage: AppLanguage,
         onEvent: @escaping @MainActor @Sendable (String) -> Void,
+        onDiagnostic: @escaping @MainActor @Sendable (String) -> Void = { _ in },
         onFailure: @escaping @MainActor @Sendable (String) -> Void
     ) async throws {
         Self.initializeWebRTC
         stateLock.withLock {
             _isDisconnecting = false
             _onEvent = onEvent
+            _onDiagnostic = onDiagnostic
             _onFailure = onFailure
         }
 
         try configureAudioSession()
+        emitDiagnostic("Audio session ready.")
 
         let factory = RTCPeerConnectionFactory()
         stateLock.withLock { _peerConnectionFactory = factory }
@@ -77,6 +81,7 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
         guard peerConnection.addTransceiver(with: audioTrack, init: audioTransceiverInit) != nil else {
             throw RealtimeWebRTCError.audioTransceiverUnavailable
         }
+        emitDiagnostic("Microphone track ready.")
 
         let channelConfig = RTCDataChannelConfiguration()
         guard let dataChannel = peerConnection.dataChannel(forLabel: "oai-events", configuration: channelConfig) else {
@@ -91,6 +96,7 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
         let offerSDP = try await peerConnection.createAndSetLocalOffer(with: constraints)
         let answerSDP = try await Self.fetchRemoteAnswer(endpoint: endpoint, token: token, localSDP: offerSDP)
         try await peerConnection.setRemoteAnswerSDP(answerSDP)
+        emitDiagnostic("Realtime WebRTC offer accepted.")
     }
 
     func updateOutputLanguage(_ outputLanguage: AppLanguage) throws {
@@ -107,6 +113,7 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
         let (activeDataChannel, activePeerConnection) = stateLock.withLock {
             _isDisconnecting = true
             _onEvent = nil
+            _onDiagnostic = nil
             _onFailure = nil
             _pendingSessionUpdate = nil
 
@@ -165,6 +172,11 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
         } catch {
             Task { @MainActor in failureHandler?(error.localizedDescription) }
         }
+    }
+
+    private func emitDiagnostic(_ message: String) {
+        let handler = stateLock.withLock { _onDiagnostic }
+        Task { @MainActor in handler?(message) }
     }
 
     private func sendJSON(_ object: [String: Any]) throws {
@@ -236,6 +248,7 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
         guard !disconnecting else { return }
         if newState == .connected || newState == .completed {
             ensureAudioPlayoutEnabled()
+            emitDiagnostic("Realtime WebRTC connected.")
         } else if newState == .failed || newState == .disconnected || newState == .closed {
             Task { @MainActor in failureHandler?("The realtime audio connection closed.") }
         }
@@ -245,6 +258,7 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
         guard !stateLock.withLock({ _isDisconnecting }) else { return }
         dataChannel.delegate = self
         stateLock.withLock { _dataChannel = dataChannel }
+        emitDiagnostic("Realtime event channel received.")
         flushPendingSessionUpdateIfNeeded()
     }
 
@@ -268,6 +282,7 @@ extension RealtimeWebRTCClient: RTCDataChannelDelegate {
         let (disconnecting, failureHandler) = stateLock.withLock { (_isDisconnecting, _onFailure) }
         guard !disconnecting else { return }
         if dataChannel.readyState == .open {
+            emitDiagnostic("Realtime event channel open.")
             flushPendingSessionUpdateIfNeeded()
         } else if dataChannel.readyState == .closed {
             Task { @MainActor in failureHandler?("The realtime event channel closed.") }

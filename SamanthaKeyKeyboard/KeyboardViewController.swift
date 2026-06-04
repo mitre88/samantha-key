@@ -45,14 +45,51 @@ final class KeyboardViewController: UIInputViewController, SamanthaKeyboardActio
 
     func openRecorder() {
         let language = AppGroupStore.selectedLanguage
-        _ = AppGroupStore.startHandoff(language: language)
-        let rawURL = "samanthakey://record?source=keyboard&targetLanguage=\(language.rawValue)"
-        guard let url = URL(string: rawURL) else { return }
-        extensionContext?.open(url) { [weak self] opened in
-            if !opened {
-                DispatchQueue.main.async { self?.openURLThroughResponderChain(url) }
-            }
+        let sessionID = UUID().uuidString
+        publishKeyboardState(
+            text: "Opening Samantha Key...",
+            status: .requested,
+            sessionID: sessionID
+        )
+
+        guard AppGroupStore.isSharedStateWritable else {
+            publishKeyboardState(
+                text: "Turn on Allow Full Access for Samantha Key in iOS Keyboard settings, then try again.",
+                status: .error,
+                sessionID: sessionID
+            )
+            hostingController?.rootView = makeKeyboardView()
+            return
         }
+
+        _ = AppGroupStore.startHandoff(language: language, sessionID: sessionID)
+        guard let url = recorderURL(language: language, sessionID: sessionID) else {
+            publishKeyboardState(
+                text: "Could not create the Samantha Key recorder link.",
+                status: .error,
+                sessionID: sessionID
+            )
+            hostingController?.rootView = makeKeyboardView()
+            return
+        }
+
+        if openURLThroughResponderChain(url) {
+            scheduleHandoffWatchdog(sessionID: sessionID)
+        } else if let extensionContext {
+            extensionContext.open(url) { [weak self] opened in
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    if opened {
+                        self.scheduleHandoffWatchdog(sessionID: sessionID)
+                    } else {
+                        self.handleOpenFailure(url: url, sessionID: sessionID)
+                    }
+                }
+            }
+        } else {
+            handleOpenFailure(url: url, sessionID: sessionID)
+        }
+
         hostingController?.rootView = makeKeyboardView()
     }
 
@@ -87,15 +124,60 @@ final class KeyboardViewController: UIInputViewController, SamanthaKeyboardActio
         )
     }
 
-    private func openURLThroughResponderChain(_ url: URL) {
+    private func recorderURL(language: AppLanguage, sessionID: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "samanthakey"
+        components.host = "record"
+        components.queryItems = [
+            URLQueryItem(name: "source", value: "keyboard"),
+            URLQueryItem(name: "targetLanguage", value: language.rawValue),
+            URLQueryItem(name: "sessionID", value: sessionID)
+        ]
+        return components.url
+    }
+
+    private func scheduleHandoffWatchdog(sessionID: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+            guard AppGroupStore.currentSessionID == sessionID,
+                  AppGroupStore.status == .requested else { return }
+            self.publishKeyboardState(
+                text: "Samantha Key did not open. Open the app manually, then tap Speak to translate again.",
+                status: .error,
+                sessionID: sessionID
+            )
+            self.hostingController?.rootView = self.makeKeyboardView()
+        }
+    }
+
+    private func handleOpenFailure(url: URL, sessionID: String) {
+        let didAttemptFallback = openURLThroughResponderChain(url)
+        if !didAttemptFallback {
+            publishKeyboardState(
+                text: "Open Samantha Key manually to record this translation.",
+                status: .error,
+                sessionID: sessionID
+            )
+        }
+        scheduleHandoffWatchdog(sessionID: sessionID)
+        hostingController?.rootView = makeKeyboardView()
+    }
+
+    private func publishKeyboardState(text: String, status: HandoffStatus, sessionID: String) {
+        AppGroupStore.publish(text: text, status: status, sessionID: sessionID)
+        KeyboardLocalFeedback.post(text: text, status: status, sessionID: sessionID)
+    }
+
+    @discardableResult
+    private func openURLThroughResponderChain(_ url: URL) -> Bool {
         let selector = NSSelectorFromString("openURL:")
-        var responder: UIResponder? = self
+        var responder: UIResponder? = view
         while let current = responder {
             if current.responds(to: selector) {
                 _ = current.perform(selector, with: url)
-                return
+                return true
             }
             responder = current.next
         }
+        return false
     }
 }

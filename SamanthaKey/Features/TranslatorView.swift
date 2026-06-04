@@ -159,6 +159,16 @@ struct TranslatorView: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if !translationSession.diagnosticMessage.isEmpty {
+                Text(translationSession.diagnosticMessage)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.quietInk)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+                    .padding(.top, AppSpacing.xxs)
+            }
         }
         .frame(maxWidth: .infinity)
     }

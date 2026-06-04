@@ -19,13 +19,24 @@ struct SamanthaKeyboardView: View {
     @State private var selectedLanguage = AppGroupStore.selectedLanguage
     @State private var pendingText = AppGroupStore.pendingText
     @State private var status = AppGroupStore.status
+    @State private var sessionID = AppGroupStore.currentSessionID
+    @State private var localPendingText = ""
+    @State private var localStatus: HandoffStatus?
+    @State private var localSessionID = ""
+    @State private var localFeedbackDate = Date.distantPast
     @State private var lastInsertedText = ""
+    @State private var lastInsertedSessionID = ""
     @State private var refreshDate = Date()
 
     private let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
     private var isDark: Bool { colorScheme == .dark }
-    private var canInsert: Bool { !pendingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && status != .error }
+    private var effectiveStatus: HandoffStatus { localStatus ?? status }
+    private var effectivePendingText: String { localStatus == nil ? pendingText : localPendingText }
+    private var effectiveSessionID: String { localStatus == nil ? sessionID : localSessionID }
+    private var canInsert: Bool {
+        !effectivePendingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && effectiveStatus != .error
+    }
 
     var body: some View {
         ZStack {
@@ -42,6 +53,9 @@ struct SamanthaKeyboardView: View {
             .padding(.bottom, 8)
         }
         .onReceive(timer) { _ in refreshState() }
+        .onReceive(NotificationCenter.default.publisher(for: KeyboardLocalFeedback.notificationName)) { notification in
+            applyLocalFeedback(notification)
+        }
         .onChange(of: selectedLanguage) { _, newValue in
             AppGroupStore.selectedLanguage = newValue
         }
@@ -119,7 +133,7 @@ struct SamanthaKeyboardView: View {
 
             Text(displayText)
                 .font(.system(size: 15, weight: canInsert ? .semibold : .regular, design: .rounded))
-                .foregroundStyle(status == .error ? .red : (canInsert ? .primary : .secondary))
+                .foregroundStyle(effectiveStatus == .error ? .red : (canInsert ? .primary : .secondary))
                 .lineLimit(3)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, minHeight: 54, alignment: .topLeading)
@@ -136,12 +150,13 @@ struct SamanthaKeyboardView: View {
     private var controlRow: some View {
         HStack(spacing: 10) {
             Button {
+                beginLocalOpenFeedback()
                 delegate?.openRecorder()
             } label: {
                 HStack(spacing: 9) {
-                    Image(systemName: status == .recording ? "waveform" : "mic.fill")
+                    Image(systemName: effectiveStatus == .recording ? "waveform" : "mic.fill")
                         .font(.system(size: 18, weight: .bold))
-                    Text(status == .recording ? "Listening in app" : "Speak to translate")
+                    Text(effectiveStatus == .recording ? "Listening in app" : "Speak to translate")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
@@ -185,7 +200,7 @@ struct SamanthaKeyboardView: View {
     }
 
     private var statusColor: Color {
-        switch status {
+        switch effectiveStatus {
         case .ready: Color(red: 0.42, green: 0.95, blue: 0.68)
         case .recording, .requested: Color(red: 0.42, green: 0.89, blue: 1.0)
         case .error: .red
@@ -194,7 +209,7 @@ struct SamanthaKeyboardView: View {
     }
 
     private var statusLabel: String {
-        switch status {
+        switch effectiveStatus {
         case .idle: "Ready for voice translation"
         case .requested: "Opening recorder"
         case .recording: "Recording in Samantha Key"
@@ -204,10 +219,14 @@ struct SamanthaKeyboardView: View {
     }
 
     private var displayText: String {
-        if pendingText.isEmpty {
+        if effectiveStatus == .requested {
+            "Opening Samantha Key..."
+        } else if effectiveStatus == .recording && effectivePendingText.isEmpty {
+            "Recording in Samantha Key. Speak clearly, then return to this keyboard."
+        } else if effectivePendingText.isEmpty {
             "Tap the microphone. Samantha records in the app, translates, then places the text back here."
         } else {
-            pendingText
+            effectivePendingText
         }
     }
 
@@ -236,19 +255,51 @@ struct SamanthaKeyboardView: View {
 
     private func refreshState() {
         refreshDate = Date()
+        if localStatus != nil,
+           AppGroupStore.updatedAt > localFeedbackDate,
+           AppGroupStore.currentSessionID == localSessionID {
+            localStatus = nil
+            localPendingText = ""
+            localSessionID = ""
+        }
         selectedLanguage = AppGroupStore.selectedLanguage
         pendingText = AppGroupStore.pendingText
         status = AppGroupStore.status
-        if status == .ready, canInsert, pendingText != lastInsertedText {
+        sessionID = AppGroupStore.currentSessionID
+        if effectiveStatus == .ready,
+           canInsert,
+           effectiveSessionID.isEmpty == false,
+           effectiveSessionID != lastInsertedSessionID,
+           effectivePendingText != lastInsertedText {
             insertDraft()
         }
     }
 
+    private func applyLocalFeedback(_ notification: Notification) {
+        guard let rawStatus = notification.userInfo?[KeyboardLocalFeedback.statusKey] as? String,
+              let status = HandoffStatus(rawValue: rawStatus) else { return }
+        localPendingText = notification.userInfo?[KeyboardLocalFeedback.textKey] as? String ?? ""
+        localSessionID = notification.userInfo?[KeyboardLocalFeedback.sessionIDKey] as? String ?? ""
+        localStatus = status
+        localFeedbackDate = Date()
+    }
+
+    private func beginLocalOpenFeedback() {
+        localPendingText = "Opening Samantha Key..."
+        localSessionID = "local-\(UUID().uuidString)"
+        localStatus = .requested
+        localFeedbackDate = Date()
+    }
+
     private func insertDraft() {
-        let text = pendingText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = effectivePendingText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         delegate?.insertText(text)
         lastInsertedText = text
+        lastInsertedSessionID = effectiveSessionID
+        localStatus = nil
+        localPendingText = ""
+        localSessionID = ""
         pendingText = ""
         status = .idle
     }
