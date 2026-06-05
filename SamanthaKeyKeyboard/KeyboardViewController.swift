@@ -141,8 +141,8 @@ final class KeyboardViewController: UIInputViewController, SamanthaKeyboardActio
             guard AppGroupStore.currentSessionID == sessionID,
                   AppGroupStore.status == .requested else { return }
             self.publishKeyboardState(
-                text: "Samantha Key did not open. Open the app manually, then tap Speak to translate again.",
-                status: .error,
+                text: "Open Samantha Key now. The app will start recording this keyboard request automatically.",
+                status: .requested,
                 sessionID: sessionID
             )
             self.hostingController?.rootView = self.makeKeyboardView()
@@ -153,8 +153,8 @@ final class KeyboardViewController: UIInputViewController, SamanthaKeyboardActio
         let didAttemptFallback = openURLThroughResponderChain(url)
         if !didAttemptFallback {
             publishKeyboardState(
-                text: "Open Samantha Key manually to record this translation.",
-                status: .error,
+                text: "Open Samantha Key now. Recording will start automatically for this keyboard request.",
+                status: .requested,
                 sessionID: sessionID
             )
         }

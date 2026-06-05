@@ -220,7 +220,7 @@ struct SamanthaKeyboardView: View {
 
     private var displayText: String {
         if effectiveStatus == .requested {
-            "Opening Samantha Key..."
+            "Open Samantha Key now. Recording will start there, then return here to insert the translation."
         } else if effectiveStatus == .recording && effectivePendingText.isEmpty {
             "Recording in Samantha Key. Speak clearly, then return to this keyboard."
         } else if effectivePendingText.isEmpty {
@@ -285,7 +285,7 @@ struct SamanthaKeyboardView: View {
     }
 
     private func beginLocalOpenFeedback() {
-        localPendingText = "Opening Samantha Key..."
+        localPendingText = "Opening Samantha Key. If it stays here, open the app manually; recording will start there."
         localSessionID = "local-\(UUID().uuidString)"
         localStatus = .requested
         localFeedbackDate = Date()

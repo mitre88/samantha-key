@@ -19,9 +19,15 @@ struct SamanthaKeyApp: App {
                     keyboardHandoff.configure(entitlementStore: entitlementStore, translationSession: translationSession)
                     await entitlementStore.refresh()
                     await translationSession.configure(entitlementProvider: entitlementStore)
+                    await keyboardHandoff.resumePendingRequestIfNeeded()
                 }
                 .onChange(of: scenePhase) { _, newPhase in
-                    if newPhase == .background {
+                    if newPhase == .active {
+                        keyboardHandoff.configure(entitlementStore: entitlementStore, translationSession: translationSession)
+                        Task {
+                            await keyboardHandoff.resumePendingRequestIfNeeded()
+                        }
+                    } else if newPhase == .background {
                         keyboardHandoff.handleSceneBackground()
                     }
                 }
@@ -53,16 +59,36 @@ final class KeyboardHandoffCoordinator {
 
     func handle(url: URL) async {
         guard url.scheme == "samanthakey", url.host == "record" else { return }
-        guard let entitlementStore, let translationSession else {
-            AppGroupStore.publish(text: "Samantha Key is still preparing. Try again.", status: .error)
-            return
-        }
 
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         let languageCode = components?.queryItems?.first(where: { $0.name == "targetLanguage" })?.value
         let incomingSessionID = components?.queryItems?.first(where: { $0.name == "sessionID" })?.value
         let resolvedSessionID = incomingSessionID?.isEmpty == false ? incomingSessionID! : (AppGroupStore.currentSessionID.isEmpty ? UUID().uuidString : AppGroupStore.currentSessionID)
         let language = AppLanguage.resolved(from: languageCode)
+        await beginKeyboardRecording(language: language, sessionID: resolvedSessionID)
+    }
+
+    func resumePendingRequestIfNeeded() async {
+        guard !isActive,
+              AppGroupStore.status == .requested,
+              AppGroupStore.currentSessionID.isEmpty == false,
+              Date().timeIntervalSince(AppGroupStore.updatedAt) < 120 else { return }
+
+        await beginKeyboardRecording(
+            language: AppGroupStore.selectedLanguage,
+            sessionID: AppGroupStore.currentSessionID
+        )
+    }
+
+    private func beginKeyboardRecording(language: AppLanguage, sessionID resolvedSessionID: String) async {
+        guard let entitlementStore, let translationSession else {
+            AppGroupStore.publish(
+                text: "Samantha Key is still preparing. Keep the app open for a moment, then try again.",
+                status: .error,
+                sessionID: resolvedSessionID
+            )
+            return
+        }
 
         sessionID = resolvedSessionID
         outputLanguage = language

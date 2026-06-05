@@ -25,6 +25,8 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
     private var _onDiagnostic: (@MainActor @Sendable (String) -> Void)?
     private var _onFailure: (@MainActor @Sendable (String) -> Void)?
     private var _isDisconnecting = false
+    private var _isConnecting = false
+    private var _hasAcceptedRemoteAnswer = false
 
     deinit {
         disconnect()
@@ -41,62 +43,77 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
         Self.initializeWebRTC
         stateLock.withLock {
             _isDisconnecting = false
+            _isConnecting = true
+            _hasAcceptedRemoteAnswer = false
             _onEvent = onEvent
             _onDiagnostic = onDiagnostic
             _onFailure = onFailure
         }
 
-        try configureAudioSession()
-        emitDiagnostic("Audio session ready.")
+        do {
+            try configureAudioSession()
+            emitDiagnostic("Audio session ready.")
 
-        let factory = RTCPeerConnectionFactory()
-        stateLock.withLock { _peerConnectionFactory = factory }
+            let factory = RTCPeerConnectionFactory()
+            stateLock.withLock { _peerConnectionFactory = factory }
 
-        let configuration = RTCConfiguration()
-        configuration.sdpSemantics = .unifiedPlan
-        configuration.iceServers = [
-            RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
-        ]
-
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
-        guard let peerConnection = factory.peerConnection(with: configuration, constraints: constraints, delegate: self) else {
-            throw RealtimeWebRTCError.peerConnectionUnavailable
-        }
-        stateLock.withLock { _peerConnection = peerConnection }
-
-        let audioConstraints = RTCMediaConstraints(
-            mandatoryConstraints: nil,
-            optionalConstraints: [
-                "googEchoCancellation": "true",
-                "googAutoGainControl": "true",
-                "googNoiseSuppression": "true",
-                "googHighpassFilter": "true"
+            let configuration = RTCConfiguration()
+            configuration.sdpSemantics = .unifiedPlan
+            configuration.iceServers = [
+                RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
             ]
-        )
-        let audioSource = factory.audioSource(with: audioConstraints)
-        let audioTrack = factory.audioTrack(with: audioSource, trackId: "samantha-microphone")
-        let audioTransceiverInit = RTCRtpTransceiverInit()
-        audioTransceiverInit.direction = RTCRtpTransceiverDirection.sendRecv
-        audioTransceiverInit.streamIds = ["samantha-key"]
-        guard peerConnection.addTransceiver(with: audioTrack, init: audioTransceiverInit) != nil else {
-            throw RealtimeWebRTCError.audioTransceiverUnavailable
-        }
-        emitDiagnostic("Microphone track ready.")
 
-        let channelConfig = RTCDataChannelConfiguration()
-        guard let dataChannel = peerConnection.dataChannel(forLabel: "oai-events", configuration: channelConfig) else {
-            throw RealtimeWebRTCError.dataChannelUnavailable
-        }
-        dataChannel.delegate = self
-        stateLock.withLock {
-            _dataChannel = dataChannel
-            _pendingSessionUpdate = Self.sessionUpdatePayload(outputLanguage: outputLanguage)
-        }
+            let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
+            guard let peerConnection = factory.peerConnection(with: configuration, constraints: constraints, delegate: self) else {
+                throw RealtimeWebRTCError.peerConnectionUnavailable
+            }
+            stateLock.withLock { _peerConnection = peerConnection }
 
-        let offerSDP = try await peerConnection.createAndSetLocalOffer(with: constraints)
-        let answerSDP = try await Self.fetchRemoteAnswer(endpoint: endpoint, token: token, localSDP: offerSDP)
-        try await peerConnection.setRemoteAnswerSDP(answerSDP)
-        emitDiagnostic("Realtime WebRTC offer accepted.")
+            let audioConstraints = RTCMediaConstraints(
+                mandatoryConstraints: nil,
+                optionalConstraints: [
+                    "googEchoCancellation": "true",
+                    "googAutoGainControl": "true",
+                    "googNoiseSuppression": "true",
+                    "googHighpassFilter": "true"
+                ]
+            )
+            let audioSource = factory.audioSource(with: audioConstraints)
+            let audioTrack = factory.audioTrack(with: audioSource, trackId: "samantha-microphone")
+            let audioTransceiverInit = RTCRtpTransceiverInit()
+            audioTransceiverInit.direction = RTCRtpTransceiverDirection.sendRecv
+            audioTransceiverInit.streamIds = ["samantha-key"]
+            guard peerConnection.addTransceiver(with: audioTrack, init: audioTransceiverInit) != nil else {
+                throw RealtimeWebRTCError.audioTransceiverUnavailable
+            }
+            emitDiagnostic("Microphone track ready.")
+
+            let channelConfig = RTCDataChannelConfiguration()
+            guard let dataChannel = peerConnection.dataChannel(forLabel: "oai-events", configuration: channelConfig) else {
+                throw RealtimeWebRTCError.dataChannelUnavailable
+            }
+            dataChannel.delegate = self
+            stateLock.withLock {
+                _dataChannel = dataChannel
+                _pendingSessionUpdate = Self.sessionUpdatePayload(outputLanguage: outputLanguage)
+            }
+
+            let offerSDP = try await peerConnection.createAndSetLocalOffer(with: constraints)
+            emitDiagnostic("Realtime offer created.")
+            let answerSDP = try await Self.fetchRemoteAnswer(endpoint: endpoint, token: token, localSDP: offerSDP)
+            guard peerConnection.signalingState == .haveLocalOffer else {
+                throw RealtimeWebRTCError.unexpectedSignalingState(Self.signalingStateName(peerConnection.signalingState))
+            }
+            try await peerConnection.setRemoteAnswerSDP(answerSDP)
+            stateLock.withLock {
+                _isConnecting = false
+                _hasAcceptedRemoteAnswer = true
+            }
+            emitDiagnostic("Realtime WebRTC offer accepted.")
+        } catch {
+            stateLock.withLock { _isConnecting = false }
+            throw error
+        }
     }
 
     func updateOutputLanguage(_ outputLanguage: AppLanguage) throws {
@@ -112,6 +129,8 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
     func disconnect() {
         let (activeDataChannel, activePeerConnection) = stateLock.withLock {
             _isDisconnecting = true
+            _isConnecting = false
+            _hasAcceptedRemoteAnswer = false
             _onEvent = nil
             _onDiagnostic = nil
             _onFailure = nil
@@ -187,7 +206,7 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
     }
 
     private static func fetchRemoteAnswer(endpoint: URL, token: String, localSDP: String) async throws -> String {
-        var request = URLRequest(url: endpoint, timeoutInterval: 10)
+        var request = URLRequest(url: endpoint, timeoutInterval: 30)
         request.httpMethod = "POST"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/sdp", forHTTPHeaderField: "Content-Type")
@@ -218,10 +237,48 @@ final class RealtimeWebRTCClient: NSObject, @unchecked Sendable {
             ]
         ]
     }
+
+    private static func signalingStateName(_ state: RTCSignalingState) -> String {
+        switch state {
+        case .stable: "stable"
+        case .haveLocalOffer: "haveLocalOffer"
+        case .haveLocalPrAnswer: "haveLocalPrAnswer"
+        case .haveRemoteOffer: "haveRemoteOffer"
+        case .haveRemotePrAnswer: "haveRemotePrAnswer"
+        case .closed: "closed"
+        @unknown default: "unknown"
+        }
+    }
+
+    private static func iceStateName(_ state: RTCIceConnectionState) -> String {
+        switch state {
+        case .new: "new"
+        case .checking: "checking"
+        case .connected: "connected"
+        case .completed: "completed"
+        case .failed: "failed"
+        case .disconnected: "disconnected"
+        case .closed: "closed"
+        case .count: "count"
+        @unknown default: "unknown"
+        }
+    }
+
+    private static func dataChannelStateName(_ state: RTCDataChannelState) -> String {
+        switch state {
+        case .connecting: "connecting"
+        case .open: "open"
+        case .closing: "closing"
+        case .closed: "closed"
+        @unknown default: "unknown"
+        }
+    }
 }
 
 extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
-    func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {}
+    func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
+        emitDiagnostic("Realtime signaling: \(Self.signalingStateName(stateChanged)).")
+    }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
         if rtpReceiver.track?.kind == kRTCMediaStreamTrackKindAudio {
@@ -244,12 +301,17 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {}
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
-        let (disconnecting, failureHandler) = stateLock.withLock { (_isDisconnecting, _onFailure) }
+        let (disconnecting, connecting, hasAcceptedRemoteAnswer, failureHandler) = stateLock.withLock {
+            (_isDisconnecting, _isConnecting, _hasAcceptedRemoteAnswer, _onFailure)
+        }
         guard !disconnecting else { return }
+        emitDiagnostic("Realtime ICE: \(Self.iceStateName(newState)).")
         if newState == .connected || newState == .completed {
             ensureAudioPlayoutEnabled()
             emitDiagnostic("Realtime WebRTC connected.")
-        } else if newState == .failed || newState == .disconnected || newState == .closed {
+        } else if newState == .failed {
+            Task { @MainActor in failureHandler?("The realtime audio connection closed.") }
+        } else if newState == .closed, hasAcceptedRemoteAnswer, !connecting {
             Task { @MainActor in failureHandler?("The realtime audio connection closed.") }
         }
     }
@@ -279,12 +341,15 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
 
 extension RealtimeWebRTCClient: RTCDataChannelDelegate {
     func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
-        let (disconnecting, failureHandler) = stateLock.withLock { (_isDisconnecting, _onFailure) }
+        let (disconnecting, connecting, hasAcceptedRemoteAnswer, failureHandler) = stateLock.withLock {
+            (_isDisconnecting, _isConnecting, _hasAcceptedRemoteAnswer, _onFailure)
+        }
         guard !disconnecting else { return }
+        emitDiagnostic("Realtime data channel: \(Self.dataChannelStateName(dataChannel.readyState)).")
         if dataChannel.readyState == .open {
             emitDiagnostic("Realtime event channel open.")
             flushPendingSessionUpdateIfNeeded()
-        } else if dataChannel.readyState == .closed {
+        } else if dataChannel.readyState == .closed, hasAcceptedRemoteAnswer, !connecting {
             Task { @MainActor in failureHandler?("The realtime event channel closed.") }
         }
     }
@@ -341,6 +406,7 @@ private enum RealtimeWebRTCError: LocalizedError {
     case offerFailed
     case emptySDPAnswer
     case signalingFailed(String)
+    case unexpectedSignalingState(String)
 
     var errorDescription: String? {
         switch self {
@@ -356,6 +422,8 @@ private enum RealtimeWebRTCError: LocalizedError {
             "The realtime service returned an empty audio answer."
         case .signalingFailed(let message):
             "Realtime call failed: \(message)"
+        case .unexpectedSignalingState(let state):
+            "Realtime negotiation closed before the audio answer could be applied. State: \(state)."
         }
     }
 }
