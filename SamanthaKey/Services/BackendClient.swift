@@ -30,6 +30,14 @@ struct RealtimeTokenResponse: Decodable {
     }
 }
 
+struct TextTranslationResponse: Decodable {
+    let translatedText: String
+
+    enum CodingKeys: String, CodingKey {
+        case translatedText = "translated_text"
+    }
+}
+
 final class BackendClient {
     private let baseURL: URL
     private let urlSession: URLSession
@@ -63,6 +71,33 @@ final class BackendClient {
         return try JSONDecoder().decode(RealtimeTokenResponse.self, from: data)
     }
 
+    func translateText(entitlement: EntitlementPayload, text: String, outputLanguage: AppLanguage) async throws -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+
+        let url = baseURL.appending(path: "samantha-key-text-translate")
+        var request = URLRequest(url: url, timeoutInterval: 20)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(
+            TextTranslationRequest(
+                entitlement: entitlement,
+                text: String(trimmed.prefix(2_000)),
+                outputLanguage: outputLanguage.realtimeLabel,
+                outputLanguageCode: outputLanguage.realtimeTranslationCode
+            )
+        )
+
+        let (data, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw BackendError.invalidResponse }
+        guard (200..<300).contains(http.statusCode) else {
+            throw BackendError.server(Self.serverErrorMessage(from: data, statusCode: http.statusCode))
+        }
+
+        let decoded = try JSONDecoder().decode(TextTranslationResponse.self, from: data)
+        return decoded.translatedText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private static func serverErrorMessage(from data: Data, statusCode: Int) -> String {
         if let envelope = try? JSONDecoder().decode(ServerErrorEnvelope.self, from: data) {
             if envelope.error == "openai_token_failed",
@@ -78,6 +113,13 @@ final class BackendClient {
 
 private struct RealtimeTokenRequest: Encodable {
     let entitlement: EntitlementPayload
+    let outputLanguage: String
+    let outputLanguageCode: String
+}
+
+private struct TextTranslationRequest: Encodable {
+    let entitlement: EntitlementPayload
+    let text: String
     let outputLanguage: String
     let outputLanguageCode: String
 }

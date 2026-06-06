@@ -256,8 +256,8 @@ struct SamanthaKeyboardView: View {
     private func refreshState() {
         refreshDate = Date()
         if localStatus != nil,
-           AppGroupStore.updatedAt > localFeedbackDate,
-           AppGroupStore.currentSessionID == localSessionID {
+           AppGroupStore.currentSessionID == localSessionID,
+           (AppGroupStore.updatedAt > localFeedbackDate || AppGroupStore.lastReadyUpdatedAt > localFeedbackDate) {
             localStatus = nil
             localPendingText = ""
             localSessionID = ""
@@ -266,6 +266,7 @@ struct SamanthaKeyboardView: View {
         pendingText = AppGroupStore.pendingText
         status = AppGroupStore.status
         sessionID = AppGroupStore.currentSessionID
+        recoverLastReadyResultIfNeeded()
         if effectiveStatus == .ready,
            canInsert,
            effectiveSessionID.isEmpty == false,
@@ -302,5 +303,16 @@ struct SamanthaKeyboardView: View {
         localSessionID = ""
         pendingText = ""
         status = .idle
+    }
+
+    private func recoverLastReadyResultIfNeeded() {
+        guard status != .ready,
+              pendingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              AppGroupStore.lastReadyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
+              Date().timeIntervalSince(AppGroupStore.lastReadyUpdatedAt) < 600 else { return }
+
+        pendingText = AppGroupStore.lastReadyText
+        status = .ready
+        sessionID = AppGroupStore.lastReadySessionID
     }
 }

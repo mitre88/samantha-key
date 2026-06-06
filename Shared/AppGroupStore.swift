@@ -8,6 +8,9 @@ enum AppGroupStore {
     static let statusKey = "handoffStatus"
     static let updatedAtKey = "handoffUpdatedAt"
     static let hasEntitlementKey = "hasActiveEntitlement"
+    static let lastReadyTextKey = "lastReadyTranslatedText"
+    static let lastReadySessionIDKey = "lastReadyHandoffSessionID"
+    static let lastReadyUpdatedAtKey = "lastReadyHandoffUpdatedAt"
     private static let accessProbeKey = "handoffAccessProbe"
 
     static var sharedDefaults: UserDefaults? {
@@ -55,6 +58,9 @@ enum AppGroupStore {
         defaults.set(sessionID, forKey: sessionIDKey)
         defaults.set(HandoffStatus.requested.rawValue, forKey: statusKey)
         defaults.removeObject(forKey: pendingTextKey)
+        defaults.removeObject(forKey: lastReadyTextKey)
+        defaults.removeObject(forKey: lastReadySessionIDKey)
+        defaults.removeObject(forKey: lastReadyUpdatedAtKey)
         touch()
         return sessionID
     }
@@ -68,8 +74,24 @@ enum AppGroupStore {
         touch()
     }
 
+    static func publishReadyText(_ text: String, sessionID: String? = nil) {
+        publish(text: text, status: .ready, sessionID: sessionID)
+        defaults.set(text, forKey: lastReadyTextKey)
+        if let sessionID, sessionID.isEmpty == false {
+            defaults.set(sessionID, forKey: lastReadySessionIDKey)
+        }
+        defaults.set(Date().timeIntervalSince1970, forKey: lastReadyUpdatedAtKey)
+        defaults.synchronize()
+    }
+
     static func clearPublishedText(sessionID: String? = nil) {
         if let sessionID, currentSessionID != sessionID { return }
+        let lastReadySessionID = defaults.string(forKey: lastReadySessionIDKey) ?? ""
+        if sessionID == nil || lastReadySessionID == sessionID {
+            defaults.removeObject(forKey: lastReadyTextKey)
+            defaults.removeObject(forKey: lastReadySessionIDKey)
+            defaults.removeObject(forKey: lastReadyUpdatedAtKey)
+        }
         defaults.removeObject(forKey: pendingTextKey)
         defaults.set(HandoffStatus.idle.rawValue, forKey: statusKey)
         touch()
@@ -85,6 +107,18 @@ enum AppGroupStore {
 
     static var updatedAt: Date {
         Date(timeIntervalSince1970: defaults.double(forKey: updatedAtKey))
+    }
+
+    static var lastReadyText: String {
+        defaults.string(forKey: lastReadyTextKey) ?? ""
+    }
+
+    static var lastReadySessionID: String {
+        defaults.string(forKey: lastReadySessionIDKey) ?? ""
+    }
+
+    static var lastReadyUpdatedAt: Date {
+        Date(timeIntervalSince1970: defaults.double(forKey: lastReadyUpdatedAtKey))
     }
 
     private static func touch() {

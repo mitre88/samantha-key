@@ -72,7 +72,7 @@ final class KeyboardHandoffCoordinator {
         guard !isActive,
               AppGroupStore.status == .requested,
               AppGroupStore.currentSessionID.isEmpty == false,
-              Date().timeIntervalSince(AppGroupStore.updatedAt) < 120 else { return }
+              Date().timeIntervalSince(AppGroupStore.updatedAt) < 600 else { return }
 
         await beginKeyboardRecording(
             language: AppGroupStore.selectedLanguage,

@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import Observation
+import UIKit
 
 @MainActor
 @Observable
@@ -29,6 +30,10 @@ final class TranslationSession {
     private var shouldPublishToKeyboard = false
     @ObservationIgnored
     private var keyboardSessionID: String?
+    @ObservationIgnored
+    private var activeEntitlementPayload: EntitlementPayload?
+    @ObservationIgnored
+    private var activeOutputLanguage = AppLanguage.english
     @ObservationIgnored
     private var didDetectSpeech = false
     @ObservationIgnored
@@ -70,6 +75,8 @@ final class TranslationSession {
             state = .preparing
             shouldPublishToKeyboard = publishToKeyboard
             keyboardSessionID = activeSessionID
+            activeEntitlementPayload = entitlement
+            activeOutputLanguage = outputLanguage
             didDetectSpeech = false
             didReceiveTranslationDelta = false
             if publishToKeyboard {
@@ -82,28 +89,16 @@ final class TranslationSession {
                 throw RealtimeSessionError.microphoneDenied
             }
 
-            note("Requesting realtime token.")
-            let tokenResponse = try await BackendClient().realtimeToken(entitlement: entitlement, outputLanguage: outputLanguage)
-            guard let token = tokenResponse.token else { throw BackendError.missingRealtimeToken }
-            note("Realtime token received.")
-
-            let client = RealtimeWebRTCClient()
-            realtimeClient = client
-
-            try await client.connect(
-                token: token,
-                endpoint: tokenResponse.webRTCEndpoint ?? URL(string: "https://api.openai.com/v1/realtime/translations/calls")!,
-                outputLanguage: outputLanguage,
-                onEvent: { [weak self] text in
-                    self?.handle(eventText: text)
-                },
-                onDiagnostic: { [weak self] message in
-                    self?.note(message)
-                },
-                onFailure: { [weak self] message in
-                    self?.fail(message)
-                }
-            )
+            do {
+                try await connectRealtime(entitlement: entitlement, outputLanguage: outputLanguage)
+            } catch {
+                guard Self.shouldRetryRealtimeConnection(after: error) else { throw error }
+                note("Realtime negotiation closed early. Retrying once.")
+                realtimeClient?.disconnect()
+                realtimeClient = nil
+                try await Task.sleep(nanoseconds: 250_000_000)
+                try await connectRealtime(entitlement: entitlement, outputLanguage: outputLanguage)
+            }
 
             state = .listening
             note("Listening for translated speech.")
@@ -120,19 +115,38 @@ final class TranslationSession {
     func stop() {
         flushBufferedText()
         let activeSessionID = keyboardSessionID ?? (AppGroupStore.currentSessionID.isEmpty ? nil : AppGroupStore.currentSessionID)
+        let finalTranslation = lastTranslation.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalTranscript = lastTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fallbackEntitlement = activeEntitlementPayload
+        let fallbackLanguage = activeOutputLanguage
         if shouldPublishToKeyboard {
-            if lastTranslation.isEmpty {
+            if !finalTranslation.isEmpty {
+                AppGroupStore.publishReadyText(finalTranslation, sessionID: activeSessionID)
+            } else if !finalTranscript.isEmpty, let fallbackEntitlement {
                 AppGroupStore.publish(
-                    text: "No translation was produced. Keep Samantha Key open while speaking, then return to the keyboard.",
+                    text: "Finalizing translation...",
+                    status: .recording,
+                    sessionID: activeSessionID
+                )
+                Task { [weak self] in
+                    await self?.publishTextFallback(
+                        sourceText: finalTranscript,
+                        entitlement: fallbackEntitlement,
+                        outputLanguage: fallbackLanguage,
+                        sessionID: activeSessionID
+                    )
+                }
+            } else {
+                AppGroupStore.publish(
+                    text: "No voice was captured. Keep Samantha Key open while speaking, then return to the keyboard.",
                     status: .error,
                     sessionID: activeSessionID
                 )
-            } else {
-                AppGroupStore.publish(text: lastTranslation, status: .ready, sessionID: activeSessionID)
             }
         }
         shouldPublishToKeyboard = false
         keyboardSessionID = nil
+        activeEntitlementPayload = nil
         realtimeClient?.disconnect()
         realtimeClient = nil
         if case .error = state { return }
@@ -197,6 +211,82 @@ final class TranslationSession {
         stop()
         state = .error(message)
         note(message)
+    }
+
+    private func connectRealtime(entitlement: EntitlementPayload, outputLanguage: AppLanguage) async throws {
+        note("Requesting realtime token.")
+        let tokenResponse = try await BackendClient().realtimeToken(entitlement: entitlement, outputLanguage: outputLanguage)
+        guard let token = tokenResponse.token else { throw BackendError.missingRealtimeToken }
+        note("Realtime token received.")
+
+        let client = RealtimeWebRTCClient()
+        realtimeClient = client
+
+        try await client.connect(
+            token: token,
+            endpoint: tokenResponse.webRTCEndpoint ?? URL(string: "https://api.openai.com/v1/realtime/translations/calls")!,
+            outputLanguage: outputLanguage,
+            onEvent: { [weak self] text in
+                self?.handle(eventText: text)
+            },
+            onDiagnostic: { [weak self] message in
+                self?.note(message)
+            },
+            onFailure: { [weak self] message in
+                self?.fail(message)
+            }
+        )
+    }
+
+    private static func shouldRetryRealtimeConnection(after error: Error) -> Bool {
+        let message = error.localizedDescription.lowercased()
+        return message.contains("closed") ||
+            message.contains("wrong state") ||
+            message.contains("signaling")
+    }
+
+    private func publishTextFallback(
+        sourceText: String,
+        entitlement: EntitlementPayload,
+        outputLanguage: AppLanguage,
+        sessionID: String?
+    ) async {
+        var backgroundTask = UIBackgroundTaskIdentifier.invalid
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "SamanthaKeyTextFallback") {
+            if backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+                backgroundTask = .invalid
+            }
+        }
+        defer {
+            if backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+            }
+        }
+
+        do {
+            let translated = try await BackendClient().translateText(
+                entitlement: entitlement,
+                text: sourceText,
+                outputLanguage: outputLanguage
+            )
+            let finalText = translated.trimmingCharacters(in: .whitespacesAndNewlines)
+            if finalText.isEmpty {
+                AppGroupStore.publish(
+                    text: "Samantha captured your voice but could not produce a translated text. Try again with a shorter phrase.",
+                    status: .error,
+                    sessionID: sessionID
+                )
+            } else {
+                AppGroupStore.publishReadyText(finalText, sessionID: sessionID)
+            }
+        } catch {
+            AppGroupStore.publish(
+                text: "Captured voice, but text translation fallback failed: \(error.localizedDescription)",
+                status: .error,
+                sessionID: sessionID
+            )
+        }
     }
 
     private func appendTranscriptDelta(_ delta: String) {
@@ -331,26 +421,34 @@ final class TranslationSession {
     }
 
     private static func isInputTranscriptDelta(_ type: String) -> Bool {
-        [
+        if [
             "session.input_transcript.delta",
             "conversation.item.input_audio_transcription.delta",
             "input_audio_buffer.transcription.delta"
-        ].contains(type)
+        ].contains(type) {
+            return true
+        }
+        return (type.contains("input_audio_transcription") || type.contains("input_transcript"))
+            && type.hasSuffix(".delta")
     }
 
     private static func isInputTranscriptDone(_ type: String) -> Bool {
-        [
+        if [
             "session.input_transcript.completed",
             "session.input_transcript.done",
             "conversation.item.input_audio_transcription.completed",
             "conversation.item.input_audio_transcription.done",
             "input_audio_buffer.transcription.completed",
             "input_audio_buffer.transcription.done"
-        ].contains(type)
+        ].contains(type) {
+            return true
+        }
+        return (type.contains("input_audio_transcription") || type.contains("input_transcript"))
+            && (type.hasSuffix(".done") || type.hasSuffix(".completed"))
     }
 
     private static func isOutputTranslationDelta(_ type: String) -> Bool {
-        [
+        if [
             "session.output_transcript.delta",
             "response.output_audio_transcript.delta",
             "response.audio_transcript.delta",
@@ -358,11 +456,18 @@ final class TranslationSession {
             "response.text.delta",
             "translation.output_text.delta",
             "translation.transcript.delta"
-        ].contains(type)
+        ].contains(type) {
+            return true
+        }
+        return (type.contains("translation") ||
+            type.contains("output_audio_transcript") ||
+            type.contains("audio_transcript") ||
+            type.contains("output_text"))
+            && type.hasSuffix(".delta")
     }
 
     private static func isOutputTranslationDone(_ type: String) -> Bool {
-        [
+        if [
             "session.output_transcript.done",
             "session.output_transcript.completed",
             "response.output_audio_transcript.done",
@@ -373,7 +478,14 @@ final class TranslationSession {
             "translation.output_text.completed",
             "translation.transcript.done",
             "translation.transcript.completed"
-        ].contains(type)
+        ].contains(type) {
+            return true
+        }
+        return (type.contains("translation") ||
+            type.contains("output_audio_transcript") ||
+            type.contains("audio_transcript") ||
+            type.contains("output_text"))
+            && (type.hasSuffix(".done") || type.hasSuffix(".completed"))
     }
 }
 
