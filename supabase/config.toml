@@ -6,5 +6,8 @@ verify_jwt = false
 [functions.samantha-key-text-translate]
 verify_jwt = false
 
+[functions.samantha-key-audio-translate]
+verify_jwt = false
+
 [functions.app-store-notifications]
 verify_jwt = false

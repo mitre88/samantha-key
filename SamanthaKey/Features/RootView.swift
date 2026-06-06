@@ -160,7 +160,7 @@ private struct KeyboardHandoffRecordingView: View {
 
                     Spacer(minLength: AppSpacing.md)
 
-                    SecondaryButton(title: "Stop recording", systemImage: "stop.fill") {
+                    SecondaryButton(title: "Stop and send text", systemImage: "paperplane.fill") {
                         keyboardHandoff.stop()
                     }
                 }
@@ -178,7 +178,7 @@ private struct KeyboardHandoffRecordingView: View {
 
     private var statusText: String {
         if isListening {
-            return "Speak now. Samantha will send the translated text back to your keyboard when you return to the original field."
+            return "Speak now. Tap Stop and send text, then return to your original field. The keyboard will insert the translation automatically."
         }
         if case .error = translationSession.state {
             return "Fix the issue below, then return to the keyboard and try again."

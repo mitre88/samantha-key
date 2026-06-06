@@ -40,6 +40,10 @@ final class TranslationSession {
     private var didReceiveTranslationDelta = false
     @ObservationIgnored
     nonisolated(unsafe) private var pendingPublishTask: Task<Void, Never>?
+    @ObservationIgnored
+    private var keyboardAudioRecorder: AVAudioRecorder?
+    @ObservationIgnored
+    private var keyboardAudioURL: URL?
 
     private static let maxLiveTextCharacters = 6_000
     private static let liveTextOverflowSlack = 512
@@ -89,6 +93,14 @@ final class TranslationSession {
                 throw RealtimeSessionError.microphoneDenied
             }
 
+            if publishToKeyboard {
+                try startKeyboardAudioRecording()
+                state = .listening
+                note("Recording voice for keyboard.")
+                AppGroupStore.publish(text: "", status: .recording, sessionID: activeSessionID)
+                return
+            }
+
             do {
                 try await connectRealtime(entitlement: entitlement, outputLanguage: outputLanguage)
             } catch {
@@ -114,6 +126,7 @@ final class TranslationSession {
 
     func stop() {
         flushBufferedText()
+        let recordedAudioData = finishKeyboardAudioRecording()
         let activeSessionID = keyboardSessionID ?? (AppGroupStore.currentSessionID.isEmpty ? nil : AppGroupStore.currentSessionID)
         let finalTranslation = lastTranslation.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalTranscript = lastTranscript.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -131,6 +144,20 @@ final class TranslationSession {
                 Task { [weak self] in
                     await self?.publishTextFallback(
                         sourceText: finalTranscript,
+                        entitlement: fallbackEntitlement,
+                        outputLanguage: fallbackLanguage,
+                        sessionID: activeSessionID
+                    )
+                }
+            } else if let recordedAudioData, let fallbackEntitlement {
+                AppGroupStore.publish(
+                    text: "Transcribing recorded voice...",
+                    status: .recording,
+                    sessionID: activeSessionID
+                )
+                Task { [weak self] in
+                    await self?.publishAudioFallback(
+                        audioData: recordedAudioData,
                         entitlement: fallbackEntitlement,
                         outputLanguage: fallbackLanguage,
                         sessionID: activeSessionID
@@ -245,6 +272,51 @@ final class TranslationSession {
             message.contains("signaling")
     }
 
+    private func startKeyboardAudioRecording() throws {
+        finishKeyboardAudioRecording()
+
+        let audioSession = AVAudioSession.sharedInstance()
+        try audioSession.setCategory(
+            .playAndRecord,
+            mode: .spokenAudio,
+            options: [.defaultToSpeaker, .allowBluetoothHFP]
+        )
+        try audioSession.setActive(true)
+
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("samantha-key-\(UUID().uuidString)")
+            .appendingPathExtension("m4a")
+        let settings: [String: Any] = [
+            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+            AVSampleRateKey: 44_100,
+            AVNumberOfChannelsKey: 1,
+            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+        ]
+        let recorder = try AVAudioRecorder(url: fileURL, settings: settings)
+        recorder.isMeteringEnabled = true
+        recorder.prepareToRecord()
+        guard recorder.record() else {
+            throw RealtimeSessionError.audioRecorderUnavailable
+        }
+
+        keyboardAudioURL = fileURL
+        keyboardAudioRecorder = recorder
+    }
+
+    @discardableResult
+    private func finishKeyboardAudioRecording() -> Data? {
+        keyboardAudioRecorder?.stop()
+        keyboardAudioRecorder = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+
+        guard let url = keyboardAudioURL else { return nil }
+        keyboardAudioURL = nil
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        guard let data = try? Data(contentsOf: url), data.count > 1_024 else { return nil }
+        return data
+    }
+
     private func publishTextFallback(
         sourceText: String,
         entitlement: EntitlementPayload,
@@ -283,6 +355,55 @@ final class TranslationSession {
         } catch {
             AppGroupStore.publish(
                 text: "Captured voice, but text translation fallback failed: \(error.localizedDescription)",
+                status: .error,
+                sessionID: sessionID
+            )
+        }
+    }
+
+    private func publishAudioFallback(
+        audioData: Data,
+        entitlement: EntitlementPayload,
+        outputLanguage: AppLanguage,
+        sessionID: String?
+    ) async {
+        var backgroundTask = UIBackgroundTaskIdentifier.invalid
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "SamanthaKeyAudioFallback") {
+            if backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+                backgroundTask = .invalid
+            }
+        }
+        defer {
+            if backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTask)
+            }
+        }
+
+        do {
+            let translated = try await BackendClient().translateAudio(
+                entitlement: entitlement,
+                audioData: audioData,
+                outputLanguage: outputLanguage
+            )
+            let transcript = translated.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+            let finalText = translated.translatedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !transcript.isEmpty {
+                lastTranscript = transcript
+            }
+            if finalText.isEmpty {
+                AppGroupStore.publish(
+                    text: "Samantha captured audio but could not produce translated text. Try again with a shorter phrase.",
+                    status: .error,
+                    sessionID: sessionID
+                )
+            } else {
+                lastTranslation = finalText
+                AppGroupStore.publishReadyText(finalText, sessionID: sessionID)
+            }
+        } catch {
+            AppGroupStore.publish(
+                text: "Captured audio, but transcription failed: \(error.localizedDescription)",
                 status: .error,
                 sessionID: sessionID
             )
@@ -424,7 +545,8 @@ final class TranslationSession {
         if [
             "session.input_transcript.delta",
             "conversation.item.input_audio_transcription.delta",
-            "input_audio_buffer.transcription.delta"
+            "input_audio_buffer.transcription.delta",
+            "transcript.text.delta"
         ].contains(type) {
             return true
         }
@@ -439,7 +561,8 @@ final class TranslationSession {
             "conversation.item.input_audio_transcription.completed",
             "conversation.item.input_audio_transcription.done",
             "input_audio_buffer.transcription.completed",
-            "input_audio_buffer.transcription.done"
+            "input_audio_buffer.transcription.done",
+            "transcript.text.done"
         ].contains(type) {
             return true
         }
@@ -491,11 +614,14 @@ final class TranslationSession {
 
 private enum RealtimeSessionError: LocalizedError {
     case microphoneDenied
+    case audioRecorderUnavailable
 
     var errorDescription: String? {
         switch self {
         case .microphoneDenied:
             "Microphone access is required. Enable it in iOS Settings, then try Speak to translate again."
+        case .audioRecorderUnavailable:
+            "Samantha Key could not start recording. Close the app using the microphone and try again."
         }
     }
 }

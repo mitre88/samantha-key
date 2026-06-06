@@ -111,7 +111,7 @@ final class KeyboardViewController: UIInputViewController, SamanthaKeyboardActio
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        let height = view.heightAnchor.constraint(equalToConstant: 292)
+        let height = view.heightAnchor.constraint(equalToConstant: 304)
         height.priority = .defaultHigh
         height.isActive = true
         heightConstraint = height

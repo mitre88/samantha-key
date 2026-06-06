@@ -43,6 +43,19 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    var keyboardBadge: String {
+        switch self {
+        case .english: "EN"
+        case .spanish: "ES"
+        case .french: "FR"
+        case .italian: "IT"
+        case .korean: "KO"
+        case .portuguese: "PT"
+        case .chinese: "ZH"
+        case .japanese: "JA"
+        }
+    }
+
     var realtimeLabel: String {
         switch self {
         case .english: "English"
