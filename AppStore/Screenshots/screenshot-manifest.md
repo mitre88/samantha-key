@@ -1,24 +1,23 @@
 # Samantha Key App Store Screenshots
 
-- Generated: 2026-05-24T21:06:25Z
-- Device class: `APP_IPHONE_69`
-- Pixel size: `1320x2868`
-- Locale: `en-US`
-- Source: real simulator captures from `iPhone 17 Pro Max ASC`, iOS 26.4
-- Composition engine: `app-store-screenshots` workflow, rendered through a local Playwright HTML compositor
-- Submission bundle: `/Users/dr.alexmitre/Desktop/SamanthaKey/screenshots_bundle`
+## iPhone 6.9" (APP_IPHONE_69, 1320x2868) — rebuilt 2026-10-08
 
-## Slides
+- Source: real simulator captures of the shipping views on `SK 17 Pro Max QA` (iOS 27.0), app 1.1.1 (10) Debug, Xcode 27.1 RC.
+- Composition: `marketing/index.html` rendered by `marketing/render_69.py` (Playwright WebKit).
+- Raws: `raw/iphone-69/en-US/` (keyboard = real keyboard extension in Reminders).
+- Ships with the next version (1.1.0 is in App Review).
 
-1. `screenshots_bundle/en-US/iphone-69/01.png` — voice translation keyboard promise.
-2. `screenshots_bundle/en-US/iphone-69/02.png` — live translation workflow.
-3. `screenshots_bundle/en-US/iphone-69/03.png` — Apple-compliant keyboard handoff.
-4. `screenshots_bundle/en-US/iphone-69/04.png` — privacy/no saved audio.
-5. `screenshots_bundle/en-US/iphone-69/05.png` — trial and monthly subscription.
+1. Voice translation keyboard — real keyboard in Reminders.
+2. Live translation — translator with a sample translation.
+3. Keyboard handoff — recording screen plus the keyboard.
+4. Private by design — keyboard setup screen.
+5. 3-day free trial — real paywall with the storefront price.
 
-## Quality Gate
+## iPhone Duo (APP_IPHONE_DUO) — 2026-10-08
 
-- Dimensions verified with `sips`: all five images are `1320x2868`.
-- No raw simulator chrome outside the intended framed UI.
-- Product copy is truthful: keyboard microphone action opens the companion app because iOS keyboard extensions cannot record directly.
-- Subscription copy matches the intended model: 3-day free trial, then MXN $149/month through Apple.
+- Inner 2853x2007 (4) and cover 1398x2034 (1) from `raw/iphone-duo/en-US/`, composed by `marketing/duo.html` + `render_duo.py`. Uploaded with 1.1.0.
+
+## Quality gate
+
+- Dimensions and RGB (no alpha) verified with Pillow; Duo sizes checked against live App Store Connect specs.
+- Copy reviewed against in-app claims (no fixed price, "no transcript history").

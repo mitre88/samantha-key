@@ -1,43 +1,81 @@
 {
   "app": "Samantha Key",
   "bundle_id": "com.alexmitre.samanthakey",
-  "generated_at": "2026-05-24T21:06:25Z",
+  "generated_at": "2026-10-08",
   "composition_engine": "app-store-screenshots",
-  "renderer": "playwright-html-compositor",
+  "renderer": "AppStore/Screenshots/marketing/index.html rendered by render_69.py (Playwright WebKit, file://)",
   "source_type": "real_simulator_captures",
   "source_device": {
-    "simulator": "iPhone 17 Pro Max ASC",
-    "os": "iOS 26.4",
+    "simulator": "SK 17 Pro Max QA (iPhone 17 Pro Max)",
+    "os": "iOS 27.0 runtime",
+    "toolchain": "Xcode 27.1 RC 27A9275",
+    "app_build": "1.1.1 (10) Debug",
     "display_type": "APP_IPHONE_69",
     "dimensions": {
       "width": 1320,
       "height": 2868
-    }
+    },
+    "status_bar": "devicectl statusBar preset screenshot (9:41)"
   },
-  "quality_gates_passed": true,
-  "ready_for_submission": true,
   "locales": [
     {
       "locale": "en-US",
       "device_class": "iphone-69",
       "screenshots": [
-        "en-US/iphone-69/01.png",
-        "en-US/iphone-69/02.png",
-        "en-US/iphone-69/03.png",
-        "en-US/iphone-69/04.png",
-        "en-US/iphone-69/05.png"
+        {
+          "file": "en-US/iphone-69/01.png",
+          "sha256": "8c9f612efe2fb476209f1cc49ce3d80c4ccd03cf3f745973de80f510fdb06c0d"
+        },
+        {
+          "file": "en-US/iphone-69/02.png",
+          "sha256": "2369a4b5f796864ff527b5d8e6232f12c41c20f791533c2dc836b2006d527aa1"
+        },
+        {
+          "file": "en-US/iphone-69/03.png",
+          "sha256": "0127d57462c1a1a022431eb78c9ff5e061d8392ddc5b6b8db24d1576c0555865"
+        },
+        {
+          "file": "en-US/iphone-69/04.png",
+          "sha256": "9e2429e88b4f8f1d5694900cde2fa6d816f3b89ff0306d6b2b9fcdf9dd5471b9"
+        },
+        {
+          "file": "en-US/iphone-69/05.png",
+          "sha256": "33a7f5c88f0a1c5b6300bc6fc29f91a0804442bbe675f17d21f783394306ce30"
+        }
       ]
     }
   ],
   "source_screenshots": [
-    "AppStore/Screenshots/raw/iphone-69/en-US/live.png",
-    "AppStore/Screenshots/raw/iphone-69/en-US/keyboard.png",
-    "AppStore/Screenshots/raw/iphone-69/en-US/handoff.png",
-    "AppStore/Screenshots/raw/iphone-69/en-US/setup.png",
-    "AppStore/Screenshots/raw/iphone-69/en-US/paywall.png"
+    {
+      "file": "AppStore/Screenshots/raw/iphone-69/en-US/keyboard.png",
+      "sha256": "8b81d1f634dfef46e605c92c7341fc611f9522cdc9b102451c5c9e1238a31412"
+    },
+    {
+      "file": "AppStore/Screenshots/raw/iphone-69/en-US/live.png",
+      "sha256": "6cbef8e36e8ef8cff7d6c356229a903a341ac89373c4e9b4f6f1a49ed4c6cf2f"
+    },
+    {
+      "file": "AppStore/Screenshots/raw/iphone-69/en-US/handoff.png",
+      "sha256": "43b50c98cb027b6d917e0dca9a784b294e1844ca069db6814383044734646b2e"
+    },
+    {
+      "file": "AppStore/Screenshots/raw/iphone-69/en-US/setup.png",
+      "sha256": "9dc7e922326ca9ff787e105807b6bc4dd8a43cf3b2062591abdb075981b9d62f"
+    },
+    {
+      "file": "AppStore/Screenshots/raw/iphone-69/en-US/paywall.png",
+      "sha256": "05bf3e141322043f3ea084f5c1ca231c5bcbdf4bd3007defb6400bd46896a2d0"
+    },
+    {
+      "file": "AppStore/Screenshots/raw/iphone-69/en-US/onboarding.png",
+      "sha256": "5a7219c26a081af72d0aa5c4e403ba379e254235f37ee8b057bf2c23bd7eab4d"
+    }
   ],
   "notes": [
-    "The deck uses real simulator captures as source images and marketing compositions at the App Store iPhone 6.9/6.7 accepted size.",
+    "Rebuilt 2026-10-08 from real captures of the shipping views; the earlier set used Debug-only marketing replicas, which were removed from the codebase.",
+    "keyboard.png is the real Samantha Key keyboard extension in Reminders; live and handoff use a Debug-only sample translation in the real views (compiled out of Release).",
+    "Slide 5 no longer states a fixed MXN price; the paywall shows StoreKit's storefront price.",
+    "Not uploaded yet: version 1.1.0 is in App Review, so this set ships with the next version.",
     "The app is iPhone-only via TARGETED_DEVICE_FAMILY=1, so no iPad screenshots are required for this target."
   ],
   "device_sets": [
