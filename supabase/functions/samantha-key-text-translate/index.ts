@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
+import { readTransaction } from "../_shared/app-store-jws.ts";
 
 type EntitlementPayload = {
   productID: string;
@@ -15,6 +16,7 @@ type RequestBody = {
   outputLanguageCode?: string;
 };
 
+const BUNDLE_ID = "com.alexmitre.samanthakey";
 const PRODUCT_ID = "samantha_key_monthly";
 const MAX_TOKEN_REQUESTS_PER_DAY = Number(Deno.env.get("MAX_TOKEN_REQUESTS_PER_DAY") ?? "240");
 const MAX_TEXT_CHARACTERS = Number(Deno.env.get("MAX_TEXT_TRANSLATION_CHARACTERS") ?? "2000");
@@ -35,7 +37,7 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: "missing_or_invalid_entitlement" }, 403);
   }
 
-  const transaction = decodeJWSPayload(entitlement.signedTransactionInfo);
+  const transaction = await readTransaction(entitlement.signedTransactionInfo, { bundleId: BUNDLE_ID }, "samantha-key-text-translate");
   if (!transaction || transaction.productId !== PRODUCT_ID) {
     return jsonResponse({ error: "invalid_transaction_payload" }, 403);
   }
@@ -51,7 +53,7 @@ Deno.serve(async (request) => {
     transactionId: String(transaction.transactionId ?? entitlement.transactionID),
     productId: PRODUCT_ID,
     expiresAt: new Date(expiresDate).toISOString(),
-    environment: transaction.environment ?? "unknown",
+    environment: String(transaction.environment ?? "unknown"),
   });
   if (!allowed) return jsonResponse({ error: "daily_usage_limit_exceeded" }, 429);
 
@@ -96,14 +98,6 @@ function createServiceClient() {
   const legacyServiceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const key = secretKeysRaw ? JSON.parse(secretKeysRaw).default : legacyServiceRole;
   return createClient(url, key);
-}
-
-function decodeJWSPayload(jws: string): Record<string, unknown> | null {
-  const part = jws.split(".")[1];
-  if (!part) return null;
-  const normalized = part.replace(/-/g, "+").replace(/_/g, "/");
-  const json = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="));
-  return JSON.parse(json);
 }
 
 async function recordAndCheckUsage(
