@@ -67,7 +67,7 @@ struct PaywallHeader: View {
                         .minimumScaleFactor(0.82)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text("paywall.subtitle")
+                    subtitle
                         .font(.footnote)
                         .foregroundStyle(AppTheme.muted)
                         .multilineTextAlignment(.center)
@@ -87,6 +87,14 @@ struct PaywallHeader: View {
         }
         .padding(.horizontal, AppSpacing.lg)
         .padding(.bottom, AppSpacing.md)
+    }
+
+    /// Uses the storefront price from StoreKit, so every country sees what Apple will charge.
+    private var subtitle: Text {
+        if let displayPrice = entitlementStore.monthlyDisplayPrice {
+            return Text("paywall.subtitle.dynamic \(displayPrice)")
+        }
+        return Text("paywall.subtitle")
     }
 }
 

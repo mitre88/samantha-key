@@ -21,7 +21,8 @@
 "onboarding.feature.private.body" = "O áudio é processado ao vivo para tradução e não é armazenado por nós.";
 "onboarding.continue" = "Continuar";
 "paywall.title" = "Comece com 3 dias grátis";
-"paywall.subtitle" = "Depois MXN $149 por mês. Cancele quando quiser nas assinaturas Apple.";
+"paywall.subtitle" = "Cancele quando quiser nas assinaturas Apple.";
+"paywall.subtitle.dynamic %@" = "Depois %@ por mês. Cancele quando quiser nas assinaturas Apple.";
 "paywall.native_badge" = "Assinatura nativa da Apple";
 "paywall.apple_checkout" = "O teste grátis e a assinatura mensal são gerenciados pela Apple.";
 "paywall.loading" = "Verificando status da assinatura";

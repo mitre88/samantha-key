@@ -21,7 +21,8 @@
 "onboarding.feature.private.body" = "音声は翻訳のためにリアルタイム処理され、保存されません。";
 "onboarding.continue" = "続ける";
 "paywall.title" = "3日間無料で開始";
-"paywall.subtitle" = "その後は月額 MXN $149。Appleのサブスクリプションでいつでも解約できます。";
+"paywall.subtitle" = "Appleのサブスクリプションでいつでも解約できます。";
+"paywall.subtitle.dynamic %@" = "その後は月額 %@。Appleのサブスクリプションでいつでも解約できます。";
 "paywall.native_badge" = "Apple標準サブスクリプション";
 "paywall.apple_checkout" = "無料トライアルと月額サブスクリプションはAppleが処理します。";
 "paywall.loading" = "Appleサブスクリプション状態を確認中";

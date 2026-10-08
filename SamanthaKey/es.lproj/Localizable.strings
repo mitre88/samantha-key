@@ -21,7 +21,8 @@
 "onboarding.feature.private.body" = "Procesamos la voz en vivo para traducir. No guardamos audio.";
 "onboarding.continue" = "Continuar";
 "paywall.title" = "Empieza con 3 días gratis";
-"paywall.subtitle" = "Después MXN $149 al mes. Cancela cuando quieras desde Apple.";
+"paywall.subtitle" = "Cancela cuando quieras desde Apple.";
+"paywall.subtitle.dynamic %@" = "Después %@ al mes. Cancela cuando quieras desde Apple.";
 "paywall.native_badge" = "Suscripción nativa de Apple";
 "paywall.apple_checkout" = "La prueba gratis y la suscripción mensual son gestionadas por Apple.";
 "paywall.loading" = "Revisando el estado de suscripción";

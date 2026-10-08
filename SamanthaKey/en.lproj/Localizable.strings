@@ -21,7 +21,8 @@
 "onboarding.feature.private.body" = "Audio is processed live for translation and is not stored by us.";
 "onboarding.continue" = "Continue";
 "paywall.title" = "Start with 3 days free";
-"paywall.subtitle" = "Then MXN $149 per month. Cancel anytime in Apple subscriptions.";
+"paywall.subtitle" = "Cancel anytime in Apple subscriptions.";
+"paywall.subtitle.dynamic %@" = "Then %@ per month. Cancel anytime in Apple subscriptions.";
 "paywall.native_badge" = "Native Apple subscription";
 "paywall.apple_checkout" = "The free trial and monthly subscription are handled by Apple.";
 "paywall.loading" = "Checking Apple subscription status";

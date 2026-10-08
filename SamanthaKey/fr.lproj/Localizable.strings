@@ -21,7 +21,8 @@
 "onboarding.feature.private.body" = "L'audio est traité en direct pour traduire et n'est pas stocké par nous.";
 "onboarding.continue" = "Continuer";
 "paywall.title" = "Commencez par 3 jours gratuits";
-"paywall.subtitle" = "Puis 149 MXN par mois. Annulez à tout moment dans les abonnements Apple.";
+"paywall.subtitle" = "Annulez à tout moment dans les abonnements Apple.";
+"paywall.subtitle.dynamic %@" = "Puis %@ par mois. Annulez à tout moment dans les abonnements Apple.";
 "paywall.native_badge" = "Abonnement Apple natif";
 "paywall.apple_checkout" = "L'essai gratuit et l'abonnement mensuel sont gérés par Apple.";
 "paywall.loading" = "Vérification de l'abonnement Apple";

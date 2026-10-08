@@ -21,7 +21,8 @@
 "onboarding.feature.private.body" = "音频仅为翻译实时处理，我们不会存储。";
 "onboarding.continue" = "继续";
 "paywall.title" = "先免费试用 3 天";
-"paywall.subtitle" = "之后每月 MXN $149。可随时在 Apple 订阅中取消。";
+"paywall.subtitle" = "可随时在 Apple 订阅中取消。";
+"paywall.subtitle.dynamic %@" = "之后每月 %@。可随时在 Apple 订阅中取消。";
 "paywall.native_badge" = "Apple 原生订阅";
 "paywall.apple_checkout" = "免费试用和月度订阅由 Apple 处理。";
 "paywall.loading" = "正在检查 Apple 订阅状态";
