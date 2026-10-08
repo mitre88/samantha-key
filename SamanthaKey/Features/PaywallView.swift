@@ -40,7 +40,7 @@ struct PaywallHeader: View {
 
     var body: some View {
         AdaptiveColumns {
-            VStack(spacing: AppSpacing.lg) {
+            VStack(spacing: AppSpacing.md) {
                 Label("paywall.native_badge", systemImage: "apple.logo")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(AppTheme.quietInk)
@@ -51,12 +51,12 @@ struct PaywallHeader: View {
                 ZStack {
                     Circle()
                         .fill(AppTheme.successTint.opacity(0.16))
-                        .frame(width: 180, height: 180)
-                        .blur(radius: 34)
+                        .frame(width: 150, height: 150)
+                        .blur(radius: 30)
 
-                    VoiceOrb(isListening: false, size: 106)
+                    VoiceOrb(isListening: false, size: 84)
                 }
-                .frame(height: 126)
+                .frame(height: 96)
                 .accessibilityHidden(true)
 
                 VStack(spacing: AppSpacing.sm) {
@@ -75,11 +75,12 @@ struct PaywallHeader: View {
                 }
             }
         } trailing: {
-            VStack(spacing: AppSpacing.lg) {
+            // The trial is stated once, in the summary's Trial row, to keep the purchase button
+            // closer to the fold on phones.
+            VStack(spacing: AppSpacing.md) {
                 SubscriptionReviewSummary(displayPrice: entitlementStore.monthlyDisplayPrice)
 
                 AppSection {
-                    PaywallLine(icon: "checkmark.seal.fill", text: "paywall.line.trial")
                     PaywallLine(icon: "speaker.wave.3.fill", text: "paywall.line.realtime")
                     PaywallLine(icon: "lock.fill", text: "paywall.line.privacy")
                 }
