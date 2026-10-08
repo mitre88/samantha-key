@@ -9,8 +9,9 @@ struct OnboardingView: View {
                 AppTheme.pageBackground.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: AppSpacing.md) {
+                    AdaptiveColumns(spacing: AppSpacing.md) {
                         HeaderBlock()
+                    } trailing: {
                         FeatureList()
                     }
                     .padding(.horizontal, AppSpacing.lg)
@@ -21,6 +22,7 @@ struct OnboardingView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 PrimaryButton(title: "onboarding.continue", systemImage: "arrow.right", action: onContinue)
+                    .readableContentWidth()
                     .padding(.horizontal, AppSpacing.lg)
                     .padding(.top, AppSpacing.sm)
                     .padding(.bottom, AppSpacing.sm)

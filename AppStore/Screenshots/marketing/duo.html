@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Samantha Key iPhone Duo Screenshot</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+        background: #050505;
+      }
+
+      .slide {
+        position: relative;
+        overflow: hidden;
+        color: #f8fafc;
+      }
+
+      .slide.inner {
+        width: 2853px;
+        height: 2007px;
+      }
+
+      .slide.outer {
+        width: 1398px;
+        height: 2034px;
+      }
+
+      .slide.light {
+        color: #050505;
+        background:
+          radial-gradient(circle at 18% 20%, rgba(123, 232, 255, 0.42), transparent 30%),
+          radial-gradient(circle at 92% 14%, rgba(119, 255, 199, 0.30), transparent 28%),
+          linear-gradient(180deg, #f8fbfd 0%, #edf4f7 55%, #dfeaed 100%);
+      }
+
+      .slide.dark {
+        background:
+          radial-gradient(circle at 16% 22%, rgba(109, 234, 255, 0.28), transparent 30%),
+          radial-gradient(circle at 86% 72%, rgba(118, 255, 196, 0.18), transparent 34%),
+          linear-gradient(180deg, #050707 0%, #0b1112 52%, #010101 100%);
+      }
+
+      .slide.mist {
+        color: #061315;
+        background:
+          linear-gradient(115deg, rgba(255, 255, 255, 0.86), rgba(230, 247, 249, 0.82)),
+          radial-gradient(circle at 80% 20%, #8feefd 0%, transparent 26%),
+          radial-gradient(circle at 16% 76%, #93ffd1 0%, transparent 24%),
+          #eef6f8;
+      }
+
+      .copy {
+        position: absolute;
+        z-index: 3;
+      }
+
+      .inner .copy {
+        left: 150px;
+        right: 620px;
+        top: 120px;
+      }
+
+      .outer .copy {
+        left: 100px;
+        right: 100px;
+        top: 120px;
+      }
+
+      .label {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 28px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: inherit;
+        font-size: 36px;
+        font-weight: 750;
+        letter-spacing: 0;
+      }
+
+      .light .label,
+      .mist .label {
+        background: rgba(255, 255, 255, 0.74);
+        border-color: rgba(10, 20, 24, 0.08);
+      }
+
+      h1 {
+        margin: 48px 0 0;
+        line-height: 0.95;
+        letter-spacing: 0;
+        font-weight: 880;
+      }
+
+      .inner h1 {
+        font-size: 116px;
+      }
+
+      .outer h1 {
+        font-size: 104px;
+      }
+
+      h1 .accent {
+        color: #63f7bd;
+      }
+
+      .light h1 .accent,
+      .mist h1 .accent {
+        color: #057f69;
+      }
+
+      .sub {
+        margin-top: 40px;
+        color: rgba(248, 250, 252, 0.72);
+        line-height: 1.22;
+        font-weight: 560;
+      }
+
+      .inner .sub {
+        font-size: 48px;
+        max-width: 1900px;
+      }
+
+      .outer .sub {
+        font-size: 43px;
+        max-width: 1080px;
+      }
+
+      .light .sub,
+      .mist .sub {
+        color: rgba(6, 19, 21, 0.58);
+      }
+
+      .device {
+        position: absolute;
+        overflow: hidden;
+        background: #000;
+        border: 12px solid rgba(255, 255, 255, 0.46);
+        box-shadow: 0 80px 160px rgba(0, 0, 0, 0.42);
+      }
+
+      .light .device,
+      .mist .device {
+        border-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 70px 140px rgba(6, 19, 21, 0.24);
+      }
+
+      .device img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Inner display, landscape: 2853 x 2007 capture shown at 1900 x 1337, bleeding off the bottom. */
+      .device.unfolded {
+        left: 50%;
+        bottom: -170px;
+        width: 1900px;
+        height: 1337px;
+        transform: translateX(-50%);
+        border-radius: 78px;
+      }
+
+      /* Cover display, portrait: 1398 x 2034 capture. */
+      .device.folded {
+        border-radius: 96px;
+      }
+
+      .outer .device.folded {
+        left: 190px;
+        right: 190px;
+        bottom: -150px;
+        height: 1478px;
+      }
+
+      .pair .device.unfolded {
+        left: 230px;
+        bottom: -150px;
+        width: 1640px;
+        height: 1154px;
+        transform: none;
+      }
+
+      .pair .device.folded {
+        right: 250px;
+        bottom: -110px;
+        width: 700px;
+        height: 1018px;
+        border-radius: 80px;
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 42% 36%, #ffffff 0%, #ffffff 36%, #eaf9fb 67%, rgba(100, 236, 255, 0.32) 100%);
+        box-shadow: 0 0 90px rgba(108, 239, 255, 0.55);
+        opacity: 0.78;
+      }
+
+      .orb::after {
+        content: "";
+        position: absolute;
+        inset: 22%;
+        border-radius: 50%;
+        border: 6px solid rgba(5, 5, 5, 0.78);
+        border-left-color: transparent;
+        border-right-color: transparent;
+      }
+
+      .inner .orb {
+        width: 380px;
+        height: 380px;
+        right: 170px;
+        top: 110px;
+      }
+
+      .outer .orb {
+        width: 380px;
+        height: 380px;
+        right: 50px;
+        top: 640px;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="root"></main>
+    <script>
+      const raw = "../raw/iphone-duo/en-US/";
+      const slides = [
+        {
+          canvas: "inner",
+          theme: "dark",
+          label: "Optimized for iPhone Duo",
+          title: "Speak once.<br />Type in <span class='accent'>any language.</span>",
+          sub: "Unfold for two columns: live voice status beside your transcript and translation.",
+          unfolded: "translator-inner.png",
+        },
+        {
+          canvas: "inner",
+          theme: "mist",
+          label: "Keyboard handoff",
+          title: "Record in the app.<br /><span class='accent'>Insert from the keyboard.</span>",
+          sub: "Built around Apple’s keyboard rules: the microphone works in the app, and the translation returns to your text field.",
+          unfolded: "handoff-inner.png",
+        },
+        {
+          canvas: "inner",
+          theme: "light",
+          label: "Folded or open",
+          title: "Open for room.<br /><span class='accent'>Close to go.</span>",
+          sub: "Samantha Key adapts to both displays of iPhone Duo, with the same features in every pose.",
+          unfolded: "translator-inner.png",
+          folded: "translator-cover.png",
+        },
+        {
+          canvas: "inner",
+          theme: "dark",
+          label: "Private by design",
+          title: "No saved audio.<br />No transcript <span class='accent'>history.</span>",
+          sub: "Speech is processed live for translation. Samantha Key is built for in-the-moment typing, not storage.",
+          unfolded: "onboarding-inner.png",
+        },
+        {
+          canvas: "outer",
+          theme: "light",
+          label: "Cover display",
+          title: "Translate with<br /><span class='accent'>one hand.</span>",
+          sub: "The full translator works folded, too.",
+          folded: "translator-cover.png",
+        },
+      ];
+
+      const params = new URLSearchParams(location.search);
+      const index = Math.max(0, Math.min(slides.length - 1, Number(params.get("slide") || 0)));
+      const slide = slides[index];
+
+      const device = (file, kind) => `<div class="device ${kind}"><img src="${raw + file}" /></div>`;
+      const visual = [
+        slide.unfolded ? device(slide.unfolded, "unfolded") : "",
+        slide.folded ? device(slide.folded, "folded") : "",
+      ].join("");
+      const pair = slide.unfolded && slide.folded ? "pair" : "";
+
+      document.body.style.width = slide.canvas === "inner" ? "2853px" : "1398px";
+      document.body.style.height = slide.canvas === "inner" ? "2007px" : "2034px";
+      document.getElementById("root").innerHTML = `
+        <section class="slide ${slide.canvas} ${slide.theme} ${pair}">
+          <div class="orb"></div>
+          <div class="copy">
+            <div class="label">${slide.label}</div>
+            <h1>${slide.title}</h1>
+            <p class="sub">${slide.sub}</p>
+          </div>
+          ${visual}
+        </section>
+      `;
+      document.title = `${index}:${slide.canvas}`;
+    </script>
+  </body>
+</html>

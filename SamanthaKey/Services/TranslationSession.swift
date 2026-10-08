@@ -649,6 +649,19 @@ private enum RealtimeEventKind {
     case ignored
 }
 
+#if DEBUG
+extension TranslationSession {
+    /// Screenshot fixture for Debug builds only: shows a finished live translation in the real
+    /// translator UI without opening the microphone or contacting the backend.
+    func showScreenshotPreview(transcript: String, translation: String) {
+        state = .listening
+        lastTranscript = transcript
+        lastTranslation = translation
+        diagnosticMessage = ""
+    }
+}
+#endif
+
 private enum RealtimeSessionError: LocalizedError {
     case microphoneDenied
     case audioRecorderUnavailable

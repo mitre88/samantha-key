@@ -39,5 +39,78 @@
   "notes": [
     "The deck uses real simulator captures as source images and marketing compositions at the App Store iPhone 6.9/6.7 accepted size.",
     "The app is iPhone-only via TARGETED_DEVICE_FAMILY=1, so no iPad screenshots are required for this target."
+  ],
+  "device_sets": [
+    {
+      "device_class": "iphone-duo",
+      "asc_placement_group": "IPHONE_DUO_PROFILE",
+      "generated_at": "2026-10-08",
+      "composition": "AppStore/Screenshots/marketing/duo.html rendered by render_duo.py (Playwright WebKit, file://)",
+      "source_type": "real_simulator_captures",
+      "source_device": {
+        "simulator": "SK Duo QA (iPhone Duo, iPhone19,4)",
+        "os": "iOS 27.1 runtime 24A94401",
+        "toolchain": "Xcode 27.1 RC 27A9275",
+        "app_build": "1.1.0 (9) Debug",
+        "status_bar": "devicectl statusBar preset screenshot (9:41)"
+      },
+      "notes": [
+        "Inner-display raws are real captures of the shipping TranslatorView, KeyboardHandoffRecordingView and OnboardingView; translator and handoff use a Debug-only sample translation (compiled out of Release, verified with strings/nm on the archive).",
+        "Accepted sizes verified against live App Store Connect appAssetLibraryRefData: inner 2853x2007, cover 1398x2034; PNG RGB without alpha."
+      ],
+      "locales": [
+        {
+          "locale": "en-US",
+          "screenshots": [
+            {
+              "file": "en-US/iphone-duo/01.png",
+              "sha256": "95006d22cb92279f8acdc9f4e99024c50935a78bcfadea2d68e422a927364c7f"
+            },
+            {
+              "file": "en-US/iphone-duo/02.png",
+              "sha256": "d463e7eb4a6106a5a5c6e2a04d5b808c72105d38e0f0dfd65fa3179fb06ecc10"
+            },
+            {
+              "file": "en-US/iphone-duo/03.png",
+              "sha256": "f52b9a49f9340300ac6f84a824ecc34e1457b1c28bfe8d2a42772a8596929e5a"
+            },
+            {
+              "file": "en-US/iphone-duo/04.png",
+              "sha256": "1afa7e2220d89179baf3113f12e404794f49c866bcf240c99d87d4febb616951"
+            },
+            {
+              "file": "en-US/iphone-duo/05.png",
+              "sha256": "ed372cb7db72ba0b19895ae71021564c370e799aed23770365ca16f77d2abb74"
+            }
+          ]
+        }
+      ],
+      "source_screenshots": [
+        {
+          "file": "AppStore/Screenshots/raw/iphone-duo/en-US/handoff-inner.png",
+          "sha256": "2f1bf0b79cd6b0c2923bb2eed015e29586582eddc3f1071ca3cedcba836b83ee"
+        },
+        {
+          "file": "AppStore/Screenshots/raw/iphone-duo/en-US/onboarding-cover.png",
+          "sha256": "eef4cc93415d51f007823e41e1b9cfbb53601b698b585227ccffff3aeea10c1d"
+        },
+        {
+          "file": "AppStore/Screenshots/raw/iphone-duo/en-US/onboarding-inner.png",
+          "sha256": "2a3e281bab6824858911d078ead34f57996e44e12951d1e932489d8dff670582"
+        },
+        {
+          "file": "AppStore/Screenshots/raw/iphone-duo/en-US/paywall-inner.png",
+          "sha256": "55a2384dc12b8bdbb305e28e32e2e1e7d67719b582ffc420f58e4a283fa67098"
+        },
+        {
+          "file": "AppStore/Screenshots/raw/iphone-duo/en-US/translator-cover.png",
+          "sha256": "c11c0497a8a90eea808094cdc9410cddd8ebc52112042461e280c4ddac95a528"
+        },
+        {
+          "file": "AppStore/Screenshots/raw/iphone-duo/en-US/translator-inner.png",
+          "sha256": "9af49b0e59e31b0ce3eaf917f5a77290dac752baabbf0f655b48299fb9a9130a"
+        }
+      ]
+    }
   ]
 }

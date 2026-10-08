@@ -8,19 +8,18 @@ struct PaywallView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                AppTheme.pageBackground.ignoresSafeArea()
-
+            // The footer sits below the store instead of overlaying it: SubscriptionStoreView lays out
+            // its purchase and restore buttons against its own frame, so an inset footer covered them
+            // on short displays such as the open iPhone Duo.
+            VStack(spacing: 0) {
                 SubscriptionStoreView(productIDs: [EntitlementStore.monthlyProductID]) {
                     PaywallHeader()
                 }
                 .subscriptionStoreControlStyle(.buttons)
                 .subscriptionStoreButtonLabel(.multiline)
                 .storeButton(.visible, for: .restorePurchases)
-            }
-            .navigationTitle("app.name")
-            .navigationBarTitleDisplayMode(.inline)
-            .safeAreaInset(edge: .bottom) {
+                .readableContentWidth(AppLayout.storeMaxWidth)
+
                 PaywallFooter(
                     isLoading: entitlementStore.isLoading,
                     errorMessage: entitlementStore.errorMessage,
@@ -28,6 +27,9 @@ struct PaywallView: View {
                     termsURL: termsURL
                 )
             }
+            .background(AppTheme.pageBackground.ignoresSafeArea())
+            .navigationTitle("app.name")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .task { await entitlementStore.refresh() }
     }
@@ -37,46 +39,50 @@ struct PaywallHeader: View {
     @Environment(EntitlementStore.self) private var entitlementStore
 
     var body: some View {
-        VStack(spacing: AppSpacing.lg) {
-            Label("paywall.native_badge", systemImage: "apple.logo")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppTheme.quietInk)
-                .padding(.horizontal, AppSpacing.sm)
-                .padding(.vertical, AppSpacing.xs)
-                .background(.thinMaterial, in: Capsule(style: .continuous))
+        AdaptiveColumns {
+            VStack(spacing: AppSpacing.lg) {
+                Label("paywall.native_badge", systemImage: "apple.logo")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.quietInk)
+                    .padding(.horizontal, AppSpacing.sm)
+                    .padding(.vertical, AppSpacing.xs)
+                    .background(.thinMaterial, in: Capsule(style: .continuous))
 
-            ZStack {
-                Circle()
-                    .fill(AppTheme.successTint.opacity(0.16))
-                    .frame(width: 180, height: 180)
-                    .blur(radius: 34)
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.successTint.opacity(0.16))
+                        .frame(width: 180, height: 180)
+                        .blur(radius: 34)
 
-                VoiceOrb(isListening: false, size: 106)
+                    VoiceOrb(isListening: false, size: 106)
+                }
+                .frame(height: 126)
+                .accessibilityHidden(true)
+
+                VStack(spacing: AppSpacing.sm) {
+                    Text("paywall.title")
+                        .font(.title.weight(.bold))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.82)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("paywall.subtitle")
+                        .font(.footnote)
+                        .foregroundStyle(AppTheme.muted)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            .frame(height: 126)
-            .accessibilityHidden(true)
+        } trailing: {
+            VStack(spacing: AppSpacing.lg) {
+                SubscriptionReviewSummary(displayPrice: entitlementStore.monthlyDisplayPrice)
 
-            VStack(spacing: AppSpacing.sm) {
-                Text("paywall.title")
-                    .font(.title.weight(.bold))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.82)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Text("paywall.subtitle")
-                    .font(.footnote)
-                    .foregroundStyle(AppTheme.muted)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            SubscriptionReviewSummary(displayPrice: entitlementStore.monthlyDisplayPrice)
-
-            AppSection {
-                PaywallLine(icon: "checkmark.seal.fill", text: "paywall.line.trial")
-                PaywallLine(icon: "speaker.wave.3.fill", text: "paywall.line.realtime")
-                PaywallLine(icon: "lock.fill", text: "paywall.line.privacy")
+                AppSection {
+                    PaywallLine(icon: "checkmark.seal.fill", text: "paywall.line.trial")
+                    PaywallLine(icon: "speaker.wave.3.fill", text: "paywall.line.realtime")
+                    PaywallLine(icon: "lock.fill", text: "paywall.line.privacy")
+                }
             }
         }
         .padding(.horizontal, AppSpacing.lg)
@@ -179,6 +185,7 @@ private struct PaywallFooter: View {
             }
             .font(.caption2.weight(.medium))
         }
+        .readableContentWidth(AppLayout.storeMaxWidth)
         .padding(.horizontal, AppSpacing.lg)
         .padding(.vertical, AppSpacing.sm)
         .frame(maxWidth: .infinity)

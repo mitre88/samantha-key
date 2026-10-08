@@ -45,6 +45,7 @@ struct KeyboardSetupView: View {
                     .foregroundStyle(AppTheme.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .readableContentWidth()
             .padding(AppSpacing.lg)
         }
         .background(AppTheme.pageBackground.ignoresSafeArea())

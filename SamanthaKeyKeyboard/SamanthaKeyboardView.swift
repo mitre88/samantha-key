@@ -28,6 +28,9 @@ struct SamanthaKeyboardView: View {
     @State private var lastInsertedSessionID = ""
 
     private static let pollInterval = Duration.milliseconds(400)
+    /// Keeps the controls at a reachable, phone-like width when the keyboard spans a wide display
+    /// such as the iPhone Duo inner screen; the background still fills the full keyboard area.
+    private static let maxContentWidth: CGFloat = 640
 
     private var isDark: Bool { colorScheme == .dark }
     private var effectiveStatus: HandoffStatus { localStatus ?? status }
@@ -58,6 +61,7 @@ struct SamanthaKeyboardView: View {
                 controlRow
                 utilityRow
             }
+            .frame(maxWidth: Self.maxContentWidth)
             .padding(.horizontal, 10)
             .padding(.top, 8)
             .padding(.bottom, 7)

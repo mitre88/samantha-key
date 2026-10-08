@@ -34,9 +34,14 @@ struct TranslatorView: View {
                 ScrollViewReader { proxy in
                     ScrollView(.vertical, showsIndicators: true) {
                         VStack(spacing: AppSpacing.lg) {
-                            sessionStage
-                            languagePicker
-                            transcriptPanel
+                            AdaptiveColumns {
+                                sessionStage
+                            } trailing: {
+                                VStack(spacing: AppSpacing.lg) {
+                                    languagePicker
+                                    transcriptPanel
+                                }
+                            }
 
                             Color.clear
                                 .frame(height: 1)
@@ -345,6 +350,7 @@ struct TranslatorView: View {
                     .background(Color.red.opacity(0.10), in: RoundedRectangle(cornerRadius: AppRadius.sm, style: .continuous))
             }
         }
+        .readableContentWidth()
         .padding(.horizontal, AppSpacing.lg)
         .padding(.top, AppSpacing.md)
         .padding(.bottom, AppSpacing.sm)

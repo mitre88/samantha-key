@@ -14,25 +14,53 @@ enum ScreenshotScene {
 
 struct ScreenshotShowcaseView: View {
     let screen: String
+    @Environment(TranslationSession.self) private var translationSession
+    @State private var hasSampleTranslation = false
 
     var body: some View {
-        NavigationStack {
-            Group {
-                switch screen {
-                case "keyboard":
-                    KeyboardMarketingScene()
-                case "handoff":
-                    HandoffMarketingScene()
-                case "setup":
-                    KeyboardSetupView()
-                case "paywall":
-                    PaywallMarketingScene()
-                default:
-                    LiveTranslationMarketingScene()
+        switch screen {
+        case "translator", "handoff-live":
+            // The shipping screens, shown once the sample translation is in place so they open
+            // at their resting scroll position instead of auto-scrolling to the new text.
+            ZStack {
+                if hasSampleTranslation {
+                    if screen == "translator" {
+                        TranslatorView(outputLanguage: .english)
+                    } else {
+                        KeyboardHandoffRecordingView()
+                    }
                 }
             }
+            .task {
+                showSampleTranslation()
+                hasSampleTranslation = true
+            }
+        default:
+            NavigationStack {
+                Group {
+                    switch screen {
+                    case "keyboard":
+                        KeyboardMarketingScene()
+                    case "handoff":
+                        HandoffMarketingScene()
+                    case "setup":
+                        KeyboardSetupView()
+                    case "paywall":
+                        PaywallMarketingScene()
+                    default:
+                        LiveTranslationMarketingScene()
+                    }
+                }
+            }
+            .tint(.primary)
         }
-        .tint(.primary)
+    }
+
+    private func showSampleTranslation() {
+        translationSession.showScreenshotPreview(
+            transcript: "Hola, llego en diez minutos. ¿Puedes guardar una mesa cerca de la ventana?",
+            translation: "Hi, I’ll arrive in ten minutes. Can you save a table near the window?"
+        )
     }
 }
 

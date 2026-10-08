@@ -64,9 +64,10 @@ struct RootView: View {
     }
 }
 
-private struct KeyboardHandoffRecordingView: View {
+struct KeyboardHandoffRecordingView: View {
     @Environment(TranslationSession.self) private var translationSession
     @Environment(KeyboardHandoffCoordinator.self) private var keyboardHandoff
+    @State private var viewportHeight: CGFloat = 0
 
     private var isListening: Bool {
         translationSession.state == .listening
@@ -95,76 +96,34 @@ private struct KeyboardHandoffRecordingView: View {
             ZStack {
                 AppTheme.pageBackground.ignoresSafeArea()
 
-                VStack(spacing: AppSpacing.lg) {
-                    Spacer(minLength: AppSpacing.md)
-
+                // Scrolls when the preview or an error makes the card taller than short displays
+                // such as the iPhone Duo cover screen; stays vertically centered when it fits.
+                ScrollView {
                     VStack(spacing: AppSpacing.lg) {
-                        Label(keyboardHandoff.outputLanguage.displayName, systemImage: "keyboard")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(AppTheme.quietInk)
-                            .padding(.horizontal, AppSpacing.sm)
-                            .padding(.vertical, AppSpacing.xs)
-                            .background(.thinMaterial, in: Capsule(style: .continuous))
-
-                        ZStack {
-                            VoiceSignalField(isListening: isListening, isError: isError)
-                                .frame(height: 172)
-                            VoiceOrb(isListening: isListening, size: 138)
-                        }
-                        .accessibilityHidden(true)
-
-                        VStack(spacing: AppSpacing.sm) {
-                            Text(stateTitle)
-                                .font(.title2.bold())
-                                .multilineTextAlignment(.center)
-
-                            Text(statusText)
-                                .font(.body)
-                                .foregroundStyle(AppTheme.muted)
-                                .multilineTextAlignment(.center)
-                                .lineSpacing(2)
-                                .fixedSize(horizontal: false, vertical: true)
-
-                            if !translationSession.diagnosticMessage.isEmpty {
-                                Text(translationSession.diagnosticMessage)
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(AppTheme.quietInk)
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.82)
-                            }
-                        }
-
-                        if !translationSession.lastTranslation.isEmpty {
-                            KeyboardTranslationPreview(text: translationSession.lastTranslation)
-                        }
-
-                        if case .error(let message) = translationSession.state {
-                            Label(message, systemImage: "exclamationmark.triangle.fill")
-                                .font(.footnote.weight(.medium))
-                                .foregroundStyle(.red)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(AppSpacing.sm)
-                                .frame(maxWidth: .infinity)
-                                .background(Color.red.opacity(0.10), in: RoundedRectangle(cornerRadius: AppRadius.sm, style: .continuous))
-                        }
+                        Spacer(minLength: 0)
+                        recordingCard
+                        Spacer(minLength: 0)
                     }
                     .padding(AppSpacing.lg)
-                    .frame(maxWidth: .infinity)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppRadius.lg, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppRadius.lg, style: .continuous)
-                            .strokeBorder(AppTheme.panelStroke, lineWidth: 1)
-                    )
-
-                    Spacer(minLength: AppSpacing.md)
-
-                    SecondaryButton(title: "Stop and send text", systemImage: "paperplane.fill") {
-                        keyboardHandoff.stop()
-                    }
+                    .frame(minHeight: viewportHeight)
                 }
-                .padding(AppSpacing.lg)
+                .scrollBounceBehavior(.basedOnSize)
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.height
+                } action: { height in
+                    viewportHeight = height
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                SecondaryButton(title: "Stop and send text", systemImage: "paperplane.fill") {
+                    keyboardHandoff.stop()
+                }
+                .readableContentWidth()
+                .padding(.horizontal, AppSpacing.lg)
+                .padding(.top, AppSpacing.sm)
+                .padding(.bottom, AppSpacing.sm)
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -174,6 +133,72 @@ private struct KeyboardHandoffRecordingView: View {
                 }
             }
         }
+    }
+
+    private var recordingCard: some View {
+        VStack(spacing: AppSpacing.lg) {
+            Label(keyboardHandoff.outputLanguage.displayName, systemImage: "keyboard")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppTheme.quietInk)
+                .padding(.horizontal, AppSpacing.sm)
+                .padding(.vertical, AppSpacing.xs)
+                .background(.thinMaterial, in: Capsule(style: .continuous))
+
+            AdaptiveColumns(minWidth: AppLayout.cardColumnsMinWidth) {
+                ZStack {
+                    VoiceSignalField(isListening: isListening, isError: isError)
+                        .frame(height: 172)
+                    VoiceOrb(isListening: isListening, size: 138)
+                }
+                .accessibilityHidden(true)
+            } trailing: {
+                VStack(spacing: AppSpacing.lg) {
+                    VStack(spacing: AppSpacing.sm) {
+                        Text(stateTitle)
+                            .font(.title2.bold())
+                            .multilineTextAlignment(.center)
+
+                        Text(statusText)
+                            .font(.body)
+                            .foregroundStyle(AppTheme.muted)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if !translationSession.diagnosticMessage.isEmpty {
+                            Text(translationSession.diagnosticMessage)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(AppTheme.quietInk)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.82)
+                        }
+                    }
+
+                    if !translationSession.lastTranslation.isEmpty {
+                        KeyboardTranslationPreview(text: translationSession.lastTranslation)
+                    }
+
+                    if case .error(let message) = translationSession.state {
+                        Label(message, systemImage: "exclamationmark.triangle.fill")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(AppSpacing.sm)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.10), in: RoundedRectangle(cornerRadius: AppRadius.sm, style: .continuous))
+                    }
+                }
+            }
+        }
+        .padding(AppSpacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppRadius.lg, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppRadius.lg, style: .continuous)
+                .strokeBorder(AppTheme.panelStroke, lineWidth: 1)
+        )
     }
 
     private var statusText: String {
