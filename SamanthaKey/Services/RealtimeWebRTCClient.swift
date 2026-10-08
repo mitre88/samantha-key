@@ -280,18 +280,17 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
         emitDiagnostic("Realtime signaling: \(Self.signalingStateName(stateChanged)).")
     }
 
+    /// `gpt-realtime-translate` always returns translated speech alongside the transcript,
+    /// and the transcript is the only thing this product consumes. The remote track still
+    /// has to be negotiated, but rendering it made the phone read private messages out
+    /// loud and spent CPU decoding audio nobody listens to.
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
-        if rtpReceiver.track?.kind == kRTCMediaStreamTrackKindAudio {
-            ensureAudioPlayoutEnabled()
-            rtpReceiver.track?.isEnabled = true
-        }
+        guard rtpReceiver.track?.kind == kRTCMediaStreamTrackKindAudio else { return }
+        rtpReceiver.track?.isEnabled = false
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
-        if stream.audioTracks.isEmpty == false {
-            ensureAudioPlayoutEnabled()
-            stream.audioTracks.forEach { $0.isEnabled = true }
-        }
+        stream.audioTracks.forEach { $0.isEnabled = false }
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {}
@@ -307,7 +306,10 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
         guard !disconnecting else { return }
         emitDiagnostic("Realtime ICE: \(Self.iceStateName(newState)).")
         if newState == .connected || newState == .completed {
-            ensureAudioPlayoutEnabled()
+            // Re-asserted on every connect, including an ICE restart after a network
+            // change, because `useManualAudio` leaves the audio unit under our control
+            // and capture stops if it is left disabled.
+            RTCAudioSession.sharedInstance().isAudioEnabled = true
             emitDiagnostic("Realtime WebRTC connected.")
         } else if newState == .failed {
             Task { @MainActor in failureHandler?("The realtime audio connection closed.") }
@@ -325,17 +327,8 @@ extension RealtimeWebRTCClient: RTCPeerConnectionDelegate {
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
-        if transceiver.mediaType == RTCRtpMediaType.audio {
-            ensureAudioPlayoutEnabled()
-        }
-    }
-
-    private func ensureAudioPlayoutEnabled() {
-        let session = RTCAudioSession.sharedInstance()
-        session.isAudioEnabled = true
-        session.lockForConfiguration()
-        defer { session.unlockForConfiguration() }
-        try? session.overrideOutputAudioPort(.speaker)
+        guard transceiver.mediaType == RTCRtpMediaType.audio else { return }
+        transceiver.receiver.track?.isEnabled = false
     }
 }
 

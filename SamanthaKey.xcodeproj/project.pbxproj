@@ -101,6 +101,7 @@
 		92CDB6C996DE07AFEDE3CF05 /* TranslationSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationSession.swift; sourceTree = "<group>"; };
 		A38E114C3E391BEFB0A0B0BF /* SamanthaKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamanthaKeyboardView.swift; sourceTree = "<group>"; };
 		B0F2BFB9AF4E35C4D4A04723 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B1885C197BB6542612810A01 /* SamanthaMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SamanthaMac.entitlements; sourceTree = "<group>"; };
 		B47F47C5BF668152EEC5DC2C /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		B48DF4C20A33DFE6C4CABAE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B5605279A2D8179215285565 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
@@ -233,6 +234,7 @@
 			isa = PBXGroup;
 			children = (
 				B0F2BFB9AF4E35C4D4A04723 /* Info.plist */,
+				B1885C197BB6542612810A01 /* SamanthaMac.entitlements */,
 				678425CE5785CD2502BE41FF /* SamanthaMacApp.swift */,
 				2D935A43EA0E8ABCD2731CE2 /* Models */,
 				205A8FA6167FE085209D446E /* Services */,
@@ -379,9 +381,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				317DF3CBA9505B17C6D80FB3 /* SamanthaMac */,
 				C7BF6A29092D2409D45B2944 /* SamanthaKey */,
 				CC8108F5B3DD59FC9FB4F1C1 /* SamanthaKeyKeyboard */,
-				317DF3CBA9505B17C6D80FB3 /* SamanthaMac */,
 			);
 		};
 /* End PBXProject section */
@@ -518,6 +520,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SamanthaMac/SamanthaMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -567,7 +570,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMPILATION_CACHING = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8UTGJ9D5B6;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -582,7 +585,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
@@ -619,6 +622,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SamanthaMac/SamanthaMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -668,7 +672,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMPILATION_CACHING = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8UTGJ9D5B6;
 				EAGER_LINKING = YES;
@@ -690,7 +694,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

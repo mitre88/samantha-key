@@ -19,7 +19,7 @@ final class TranslationSession {
     private(set) var diagnosticMessage = ""
 
     @ObservationIgnored
-    nonisolated(unsafe) private var realtimeClient: RealtimeWebRTCClient?
+    private var realtimeClient: RealtimeWebRTCClient?
     @ObservationIgnored
     private weak var entitlementProvider: EntitlementStore?
     @ObservationIgnored
@@ -39,7 +39,7 @@ final class TranslationSession {
     @ObservationIgnored
     private var didReceiveTranslationDelta = false
     @ObservationIgnored
-    nonisolated(unsafe) private var pendingPublishTask: Task<Void, Never>?
+    private var pendingPublishTask: Task<Void, Never>?
     @ObservationIgnored
     private var keyboardAudioRecorder: AVAudioRecorder?
     @ObservationIgnored
@@ -48,11 +48,6 @@ final class TranslationSession {
     private static let maxLiveTextCharacters = 6_000
     private static let liveTextOverflowSlack = 512
     private static let publishDebounceNanoseconds: UInt64 = 80_000_000
-
-    deinit {
-        pendingPublishTask?.cancel()
-        realtimeClient?.disconnect()
-    }
 
     func configure(entitlementProvider: EntitlementStore) async {
         self.entitlementProvider = entitlementProvider
@@ -196,34 +191,34 @@ final class TranslationSession {
               let event = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let type = event["type"] as? String else { return }
 
-        switch type {
-        case "session.created", "session.updated":
+        switch Self.kind(of: type) {
+        case .sessionLifecycle:
             break
-        case let eventType where Self.isOutputTranslationDelta(eventType):
+        case .outputTranslationDelta:
             if let delta = Self.textPayload(from: event) { appendTranslationDelta(delta) }
-        case let eventType where Self.isInputTranscriptDelta(eventType):
+        case .inputTranscriptDelta:
             if let delta = Self.textPayload(from: event) { appendTranscriptDelta(delta) }
-        case let eventType where Self.isInputTranscriptDone(eventType):
+        case .inputTranscriptDone:
             if let transcript = Self.textPayload(from: event) {
                 transcriptBuffer = Self.trimmedLiveText(transcript)
                 flushBufferedText()
             }
-        case let eventType where Self.isOutputTranslationDone(eventType):
+        case .outputTranslationDone:
             if let transcript = Self.textPayload(from: event) {
                 translationBuffer = Self.trimmedLiveText(transcript)
                 flushBufferedText()
             }
-        case "input_audio_buffer.speech_started", "session.input_audio_buffer.speech_started":
+        case .speechStarted:
             if !didDetectSpeech {
                 didDetectSpeech = true
                 note("Speech detected.")
             }
             resetLiveText()
-        case "response.done", "response.audio.done":
+        case .responseDone:
             flushBufferedText()
-        case "error":
+        case .failure:
             fail(Self.errorMessage(from: event))
-        default:
+        case .ignored:
             break
         }
     }
@@ -286,9 +281,11 @@ final class TranslationSession {
         let fileURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("samantha-key-\(UUID().uuidString)")
             .appendingPathExtension("m4a")
+        // The backend resamples to 16 kHz for transcription regardless, so recording at
+        // 44.1 kHz only inflates the upload that has to travel while the user waits.
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 44_100,
+            AVSampleRateKey: 16_000,
             AVNumberOfChannelsKey: 1,
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
         ]
@@ -468,8 +465,16 @@ final class TranslationSession {
     }
 
     private func trimBufferIfNeeded(_ text: inout String) {
-        guard text.count > Self.maxLiveTextCharacters + Self.liveTextOverflowSlack else { return }
+        guard Self.exceedsLiveTextLimit(text, by: Self.liveTextOverflowSlack) else { return }
         text = String(text.suffix(Self.maxLiveTextCharacters))
+    }
+
+    /// UTF-8 length is stored on a native String, so it filters out the common case in
+    /// O(1). Grapheme counting is O(n) and this runs on every streaming delta.
+    private static func exceedsLiveTextLimit(_ text: String, by slack: Int = 0) -> Bool {
+        let limit = maxLiveTextCharacters + slack
+        guard text.utf8.count > limit else { return false }
+        return text.count > limit
     }
 
     private static func errorMessage(from event: [String: Any]) -> String {
@@ -481,7 +486,7 @@ final class TranslationSession {
     }
 
     private static func trimmedLiveText(_ text: String) -> String {
-        guard text.count > maxLiveTextCharacters else { return text }
+        guard exceedsLiveTextLimit(text) else { return text }
         return String(text.suffix(maxLiveTextCharacters))
     }
 
@@ -507,8 +512,10 @@ final class TranslationSession {
         diagnosticMessage = message
     }
 
+    private static let textPayloadKeys = ["delta", "text", "transcript", "translation", "output_text"]
+
     private static func textPayload(from event: [String: Any]) -> String? {
-        for key in ["delta", "text", "transcript", "translation", "output_text"] {
+        for key in textPayloadKeys {
             if let value = event[key] as? String, value.isEmpty == false {
                 return value
             }
@@ -541,75 +548,105 @@ final class TranslationSession {
         return nil
     }
 
-    private static func isInputTranscriptDelta(_ type: String) -> Bool {
-        if [
-            "session.input_transcript.delta",
-            "conversation.item.input_audio_transcription.delta",
-            "input_audio_buffer.transcription.delta",
-            "transcript.text.delta"
-        ].contains(type) {
-            return true
+    private static let inputTranscriptDeltaTypes: Set<String> = [
+        "session.input_transcript.delta",
+        "conversation.item.input_audio_transcription.delta",
+        "input_audio_buffer.transcription.delta",
+        "transcript.text.delta"
+    ]
+
+    private static let inputTranscriptDoneTypes: Set<String> = [
+        "session.input_transcript.completed",
+        "session.input_transcript.done",
+        "conversation.item.input_audio_transcription.completed",
+        "conversation.item.input_audio_transcription.done",
+        "input_audio_buffer.transcription.completed",
+        "input_audio_buffer.transcription.done",
+        "transcript.text.done"
+    ]
+
+    private static let outputTranslationDeltaTypes: Set<String> = [
+        "session.output_transcript.delta",
+        "response.output_audio_transcript.delta",
+        "response.audio_transcript.delta",
+        "response.output_text.delta",
+        "response.text.delta",
+        "translation.output_text.delta",
+        "translation.transcript.delta"
+    ]
+
+    private static let outputTranslationDoneTypes: Set<String> = [
+        "session.output_transcript.done",
+        "session.output_transcript.completed",
+        "response.output_audio_transcript.done",
+        "response.audio_transcript.done",
+        "response.output_text.done",
+        "response.text.done",
+        "translation.output_text.done",
+        "translation.output_text.completed",
+        "translation.transcript.done",
+        "translation.transcript.completed"
+    ]
+
+    /// Resolves an event name once per event. The loose substring patterns only run when
+    /// the suffix already matched, and the known names resolve through set lookups, so a
+    /// delta costs one hash probe instead of re-scanning the name for every category.
+    ///
+    /// The four pattern branches stay in their original order: a name that satisfies both
+    /// the output and the input pattern is still treated as output, as it was before.
+    private static func kind(of type: String) -> RealtimeEventKind {
+        switch type {
+        case "session.created", "session.updated":
+            return .sessionLifecycle
+        case "input_audio_buffer.speech_started", "session.input_audio_buffer.speech_started":
+            return .speechStarted
+        case "response.done", "response.audio.done":
+            return .responseDone
+        case "error":
+            return .failure
+        default:
+            break
         }
-        return (type.contains("input_audio_transcription") || type.contains("input_transcript"))
-            && type.hasSuffix(".delta")
+
+        let isDelta = type.hasSuffix(".delta")
+        let isFinished = !isDelta && (type.hasSuffix(".done") || type.hasSuffix(".completed"))
+
+        if outputTranslationDeltaTypes.contains(type) || (isDelta && mentionsOutputTranslation(type)) {
+            return .outputTranslationDelta
+        }
+        if inputTranscriptDeltaTypes.contains(type) || (isDelta && mentionsInputTranscript(type)) {
+            return .inputTranscriptDelta
+        }
+        if inputTranscriptDoneTypes.contains(type) || (isFinished && mentionsInputTranscript(type)) {
+            return .inputTranscriptDone
+        }
+        if outputTranslationDoneTypes.contains(type) || (isFinished && mentionsOutputTranslation(type)) {
+            return .outputTranslationDone
+        }
+        return .ignored
     }
 
-    private static func isInputTranscriptDone(_ type: String) -> Bool {
-        if [
-            "session.input_transcript.completed",
-            "session.input_transcript.done",
-            "conversation.item.input_audio_transcription.completed",
-            "conversation.item.input_audio_transcription.done",
-            "input_audio_buffer.transcription.completed",
-            "input_audio_buffer.transcription.done",
-            "transcript.text.done"
-        ].contains(type) {
-            return true
-        }
-        return (type.contains("input_audio_transcription") || type.contains("input_transcript"))
-            && (type.hasSuffix(".done") || type.hasSuffix(".completed"))
+    private static func mentionsOutputTranslation(_ type: String) -> Bool {
+        type.contains("audio_transcript") ||
+            type.contains("translation") ||
+            type.contains("output_text")
     }
 
-    private static func isOutputTranslationDelta(_ type: String) -> Bool {
-        if [
-            "session.output_transcript.delta",
-            "response.output_audio_transcript.delta",
-            "response.audio_transcript.delta",
-            "response.output_text.delta",
-            "response.text.delta",
-            "translation.output_text.delta",
-            "translation.transcript.delta"
-        ].contains(type) {
-            return true
-        }
-        return (type.contains("translation") ||
-            type.contains("output_audio_transcript") ||
-            type.contains("audio_transcript") ||
-            type.contains("output_text"))
-            && type.hasSuffix(".delta")
+    private static func mentionsInputTranscript(_ type: String) -> Bool {
+        type.contains("input_audio_transcription") || type.contains("input_transcript")
     }
+}
 
-    private static func isOutputTranslationDone(_ type: String) -> Bool {
-        if [
-            "session.output_transcript.done",
-            "session.output_transcript.completed",
-            "response.output_audio_transcript.done",
-            "response.audio_transcript.done",
-            "response.output_text.done",
-            "response.text.done",
-            "translation.output_text.done",
-            "translation.output_text.completed",
-            "translation.transcript.done",
-            "translation.transcript.completed"
-        ].contains(type) {
-            return true
-        }
-        return (type.contains("translation") ||
-            type.contains("output_audio_transcript") ||
-            type.contains("audio_transcript") ||
-            type.contains("output_text"))
-            && (type.hasSuffix(".done") || type.hasSuffix(".completed"))
-    }
+private enum RealtimeEventKind {
+    case sessionLifecycle
+    case inputTranscriptDelta
+    case inputTranscriptDone
+    case outputTranslationDelta
+    case outputTranslationDone
+    case speechStarted
+    case responseDone
+    case failure
+    case ignored
 }
 
 private enum RealtimeSessionError: LocalizedError {

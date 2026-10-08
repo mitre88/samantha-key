@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct SamanthaMacApp: App {
+    @NSApplicationDelegateAdaptor(SamanthaMacAppDelegate.self) private var appDelegate
     @State private var agent = MacVoiceAgent()
 
     var body: some Scene {
@@ -22,6 +23,29 @@ struct SamanthaMacApp: App {
             Divider()
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
+            }
+        }
+    }
+}
+
+private final class SamanthaMacAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        showMainWindow()
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showMainWindow()
+        return true
+    }
+
+    private func showMainWindow() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            NSApp.activate(ignoringOtherApps: true)
+            for window in NSApp.windows where window.canBecomeMain {
+                window.setContentSize(NSSize(width: 907, height: 817))
+                window.center()
+                window.deminiaturize(nil)
+                window.makeKeyAndOrderFront(nil)
             }
         }
     }

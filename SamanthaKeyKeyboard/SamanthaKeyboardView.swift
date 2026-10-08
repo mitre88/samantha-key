@@ -26,9 +26,8 @@ struct SamanthaKeyboardView: View {
     @State private var localFeedbackDate = Date.distantPast
     @State private var lastInsertedText = ""
     @State private var lastInsertedSessionID = ""
-    @State private var refreshDate = Date()
 
-    private let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
+    private static let pollInterval = Duration.milliseconds(400)
 
     private var isDark: Bool { colorScheme == .dark }
     private var effectiveStatus: HandoffStatus { localStatus ?? status }
@@ -36,6 +35,17 @@ struct SamanthaKeyboardView: View {
     private var effectiveSessionID: String { localStatus == nil ? sessionID : localSessionID }
     private var canInsert: Bool {
         !effectivePendingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && effectiveStatus != .error
+    }
+
+    /// The app only mutates shared state while a handoff is in flight, and every path that
+    /// leaves work pending publishes `.recording` first. Polling outside those states just
+    /// re-rendered a translucent keyboard 2.5 times a second for nothing.
+    private var isAwaitingApp: Bool {
+        if localStatus != nil { return true }
+        switch status {
+        case .requested, .recording: return true
+        case .idle, .ready, .error: return false
+        }
     }
 
     var body: some View {
@@ -52,7 +62,15 @@ struct SamanthaKeyboardView: View {
             .padding(.top, 8)
             .padding(.bottom, 7)
         }
-        .onReceive(timer) { _ in refreshState() }
+        .task(id: isAwaitingApp) {
+            refreshState()
+            guard isAwaitingApp else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.pollInterval)
+                guard !Task.isCancelled else { return }
+                refreshState()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: KeyboardLocalFeedback.notificationName)) { notification in
             applyLocalFeedback(notification)
         }
@@ -280,7 +298,6 @@ struct SamanthaKeyboardView: View {
     }
 
     private func refreshState() {
-        refreshDate = Date()
         if localStatus != nil,
            shouldClearLocalFeedbackForSharedState() {
             localStatus = nil

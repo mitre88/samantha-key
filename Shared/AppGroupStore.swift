@@ -13,15 +13,17 @@ enum AppGroupStore {
     static let lastReadyUpdatedAtKey = "lastReadyHandoffUpdatedAt"
     private static let accessProbeKey = "handoffAccessProbe"
 
-    static var sharedDefaults: UserDefaults? {
-        UserDefaults(suiteName: identifier)
-    }
+    /// `UserDefaults` is documented thread-safe, so a single shared instance serves
+    /// the app and the keyboard extension instead of allocating one per access.
+    nonisolated(unsafe) static let sharedDefaults = UserDefaults(suiteName: identifier)
 
     static var isAppGroupAvailable: Bool {
         sharedDefaults != nil
     }
 
-    static var isSharedStateWritable: Bool {
+    /// Allow Full Access can only change by reloading the extension, so the probe
+    /// runs once per process rather than on every microphone tap.
+    static let isSharedStateWritable: Bool = {
         guard let defaults = sharedDefaults else { return false }
         let marker = UUID().uuidString
         defaults.set(marker, forKey: accessProbeKey)
@@ -30,7 +32,7 @@ enum AppGroupStore {
         defaults.removeObject(forKey: accessProbeKey)
         defaults.synchronize()
         return canReadBack
-    }
+    }()
 
     static var defaults: UserDefaults {
         sharedDefaults ?? .standard
@@ -62,6 +64,7 @@ enum AppGroupStore {
         defaults.removeObject(forKey: lastReadySessionIDKey)
         defaults.removeObject(forKey: lastReadyUpdatedAtKey)
         touch()
+        flush()
         return sessionID
     }
 
@@ -81,7 +84,7 @@ enum AppGroupStore {
             defaults.set(sessionID, forKey: lastReadySessionIDKey)
         }
         defaults.set(Date().timeIntervalSince1970, forKey: lastReadyUpdatedAtKey)
-        defaults.synchronize()
+        flush()
     }
 
     static func clearPublishedText(sessionID: String? = nil) {
@@ -123,6 +126,12 @@ enum AppGroupStore {
 
     private static func touch() {
         defaults.set(Date().timeIntervalSince1970, forKey: updatedAtKey)
+    }
+
+    /// Reserved for the two handoff boundaries where the other process must observe the
+    /// change before the user acts. Streaming updates arrive every 80 ms and rely on the
+    /// system's own propagation instead of forcing a disk write per delta.
+    private static func flush() {
         defaults.synchronize()
     }
 }

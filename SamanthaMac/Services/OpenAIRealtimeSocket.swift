@@ -11,6 +11,7 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
     private var isClosed = false
     private var openContinuation: CheckedContinuation<Void, Error>?
     private var updateContinuation: CheckedContinuation<Void, Error>?
+    private let sendQueue = RealtimeSocketSendQueue()
 
     init(
         apiKey: String,
@@ -36,14 +37,15 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
 
         let socket = session.webSocketTask(with: request)
         task = socket
-        socket.resume()
-        receiveNext()
-        try await waitForOpen()
+        try await withCheckedThrowingContinuation { continuation in
+            openContinuation = continuation
+            socket.resume()
+            receiveNext()
+        }
     }
 
     func configureSession(instructions: String) async throws {
-        let updateWait = makeSessionUpdateWaitTask()
-        try await sendObject([
+        let payload: [String: Any] = [
             "type": "session.update",
             "event_id": "samantha_mac_session_update",
             "session": [
@@ -59,7 +61,7 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
                         ],
                         "turn_detection": [
                             "type": "server_vad",
-                            "threshold": 0.5,
+                            "threshold": NSDecimalNumber(string: "0.28"),
                             "prefix_padding_ms": 300,
                             "silence_duration_ms": 700,
                             "create_response": true,
@@ -80,8 +82,19 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
                 "tools": LocalToolRouter.toolSchemas,
                 "tool_choice": "auto"
             ]
-        ])
-        try await updateWait.value
+        ]
+
+        let text = try encodeObject(payload)
+        try await withCheckedThrowingContinuation { continuation in
+            updateContinuation = continuation
+            Task { [weak self, text] in
+                do {
+                    try await self?.send(text)
+                } catch {
+                    self?.resumeSessionUpdateWait(with: .failure(error))
+                }
+            }
+        }
     }
 
     func sendAudio(_ data: Data) async throws {
@@ -89,6 +102,18 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
             "type": "input_audio_buffer.append",
             "audio": data.base64EncodedString()
         ])
+    }
+
+    func enqueueAudio(_ data: Data) throws {
+        guard isClosed == false, let task else { throw RealtimeSocketError.closed }
+        let text = try encodeObject([
+            "type": "input_audio_buffer.append",
+            "audio": data.base64EncodedString()
+        ])
+        let onError = onError
+        Task {
+            await sendQueue.send(text, task: task, onError: onError)
+        }
     }
 
     func finishTurn() async throws {
@@ -141,14 +166,18 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
     }
 
     private func sendObject(_ object: [String: Any]) async throws {
-        let data = try JSONSerialization.data(withJSONObject: object)
-        guard let text = String(data: data, encoding: .utf8) else { return }
+        let text = try encodeObject(object)
         try await send(text)
+    }
+
+    private func encodeObject(_ object: [String: Any]) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: object)
+        return String(data: data, encoding: .utf8) ?? "{}"
     }
 
     private func send(_ text: String) async throws {
         guard isClosed == false, let task else { throw RealtimeSocketError.closed }
-        try await task.send(.string(text))
+        try await sendQueue.send(text, task: task)
     }
 
     private func receiveNext() {
@@ -176,20 +205,6 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
                 self.updateContinuation?.resume(throwing: error)
                 self.updateContinuation = nil
                 Task { @MainActor in self.onError(error.localizedDescription) }
-            }
-        }
-    }
-
-    private func waitForOpen() async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            openContinuation = continuation
-        }
-    }
-
-    private func makeSessionUpdateWaitTask() -> Task<Void, Error> {
-        Task { [weak self] in
-            try await withCheckedThrowingContinuation { continuation in
-                self?.updateContinuation = continuation
             }
         }
     }
@@ -226,9 +241,33 @@ final class OpenAIRealtimeSocket: NSObject, URLSessionWebSocketDelegate, @unchec
 
     private static func errorMessage(from event: [String: Any]) -> String {
         if let error = event["error"] as? [String: Any] {
-            return (error["message"] as? String) ?? (error["code"] as? String) ?? "Realtime API error."
+            if let message = error["message"] as? String, message.isEmpty == false { return message }
+            if let code = error["code"] as? String, code.isEmpty == false { return code }
+        }
+        if let data = try? JSONSerialization.data(withJSONObject: event, options: [.sortedKeys]),
+           let text = String(data: data, encoding: .utf8),
+           text.isEmpty == false {
+            return text
         }
         return "Realtime API error."
+    }
+}
+
+private actor RealtimeSocketSendQueue {
+    func send(_ text: String, task: URLSessionWebSocketTask) async throws {
+        try await task.send(.string(text))
+    }
+
+    func send(
+        _ text: String,
+        task: URLSessionWebSocketTask,
+        onError: @escaping @MainActor @Sendable (String) -> Void
+    ) async {
+        do {
+            try await send(text, task: task)
+        } catch {
+            await onError(error.localizedDescription)
+        }
     }
 }
 

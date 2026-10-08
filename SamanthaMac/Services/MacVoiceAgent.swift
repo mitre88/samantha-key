@@ -23,6 +23,8 @@ final class MacVoiceAgent {
     @ObservationIgnored private var lastFailureMessage: String?
     @ObservationIgnored private var audioChunkCount = 0
     @ObservationIgnored private var didReceiveSpeech = false
+    @ObservationIgnored private var suppressInputUntil = Date.distantPast
+    @ObservationIgnored private var didLogSuppressedInput = false
 
     var isRunning: Bool {
         if case .listening = state { return true }
@@ -85,6 +87,10 @@ final class MacVoiceAgent {
             fail("OpenAI API key was not found. Save a valid key that starts with sk-proj-.")
             return
         }
+        guard await MicrophoneStreamer.requestMicrophoneAccess() else {
+            fail("Microphone permission is denied. Enable it in System Settings > Privacy & Security > Microphone.")
+            return
+        }
 
         do {
             state = .connecting
@@ -93,6 +99,8 @@ final class MacVoiceAgent {
             userDraft = ""
             audioChunkCount = 0
             didReceiveSpeech = false
+            suppressInputUntil = .distantPast
+            didLogSuppressedInput = false
             handledCallIDs.removeAll()
             append(.info, "Connecting to gpt-realtime-2.")
 
@@ -109,12 +117,24 @@ final class MacVoiceAgent {
             )
             socket = realtime
             try await realtime.connect()
+            append(.info, "Realtime socket connected.")
             try await realtime.configureSession(instructions: Self.instructions)
-            try speaker.start()
-            try microphone.start { [weak self] data in
-                Task { @MainActor in
-                    await self?.sendAudio(data)
+            append(.info, "Realtime session ready.")
+            do {
+                try speaker.start()
+                append(.info, "Speaker output ready.")
+            } catch {
+                throw MacAgentRuntimeError.audioOutput(Self.describe(error))
+            }
+            do {
+                try microphone.start { [weak self] data in
+                    Task { @MainActor in
+                        self?.sendAudio(data)
+                    }
                 }
+                append(.info, "Microphone input ready.")
+            } catch {
+                throw MacAgentRuntimeError.microphoneInput(Self.describe(error))
             }
 
             state = .listening
@@ -134,6 +154,8 @@ final class MacVoiceAgent {
         pendingApproval = nil
         assistantDraft = ""
         userDraft = ""
+        suppressInputUntil = .distantPast
+        didLogSuppressedInput = false
         if case .error = state { return }
         state = .idle
         append(.info, "Stopped.")
@@ -167,14 +189,27 @@ final class MacVoiceAgent {
         append(.info, "Log cleared.")
     }
 
-    private func sendAudio(_ data: Data) async {
+    private func sendAudio(_ data: Data) {
         guard socket != nil else { return }
+        if Date() < suppressInputUntil {
+            if didLogSuppressedInput == false {
+                didLogSuppressedInput = true
+                append(.info, "Microphone input is muted while Samantha is speaking.")
+            }
+            return
+        }
+        didLogSuppressedInput = false
+
         do {
             audioChunkCount += 1
             if audioChunkCount == 1 {
                 append(.info, "Microphone audio is streaming.")
+            } else if audioChunkCount == 120, didReceiveSpeech == false {
+                append(.info, "Microphone data is being sent, but no speech has been detected yet.")
+            } else if audioChunkCount % 300 == 0 {
+                append(.info, "Microphone stream is active: \(audioChunkCount) chunks sent.")
             }
-            try await socket?.sendAudio(data)
+            try socket?.enqueueAudio(data)
         } catch {
             fail(error.localizedDescription)
         }
@@ -218,7 +253,10 @@ final class MacVoiceAgent {
         case "response.output_audio.delta":
             if let delta = event["delta"] as? String,
                let audio = Data(base64Encoded: delta) {
-                speaker.playPCM16(audio)
+                if let playbackEnd = speaker.playPCM16(audio) {
+                    suppressInputUntil = max(suppressInputUntil, playbackEnd.addingTimeInterval(0.55))
+                    didLogSuppressedInput = false
+                }
             }
         case "response.output_audio_transcript.delta", "response.output_text.delta", "response.text.delta":
             if let delta = event["delta"] as? String {
@@ -238,6 +276,7 @@ final class MacVoiceAgent {
             }
         case "response.done":
             flushAssistantDraft(fallback: nil)
+            suppressInputUntil = max(suppressInputUntil, Date().addingTimeInterval(0.35))
             for call in functionCalls(fromResponseDoneEvent: event) {
                 append(.tool, "Tool requested: \(call.name).")
                 Task { await handleFunctionCall(call) }
@@ -294,6 +333,9 @@ final class MacVoiceAgent {
 
     private func append(_ kind: AgentLogEntry.Kind, _ message: String) {
         logs.append(AgentLogEntry(kind: kind, message: message))
+#if DEBUG
+        NSLog("[Samantha Mac] \(kind.rawValue): \(message)")
+#endif
         if logs.count > 160 {
             logs.removeFirst(logs.count - 160)
         }
@@ -351,11 +393,24 @@ final class MacVoiceAgent {
 
     private static func errorMessage(from event: [String: Any]) -> String {
         if let error = event["error"] as? [String: Any] {
-            if let message = error["message"] as? String { return message }
-            if let code = error["code"] as? String { return code }
+            if let message = error["message"] as? String, message.isEmpty == false { return message }
+            if let code = error["code"] as? String, code.isEmpty == false { return code }
         }
-        if let message = event["message"] as? String { return message }
+        if let message = event["message"] as? String, message.isEmpty == false { return message }
+        if let data = try? JSONSerialization.data(withJSONObject: event, options: [.sortedKeys]),
+           let text = String(data: data, encoding: .utf8),
+           text.isEmpty == false {
+            return text
+        }
         return "Realtime session error."
+    }
+
+    private static func describe(_ error: Error) -> String {
+        let nsError = error as NSError
+        if nsError.localizedDescription.isEmpty == false {
+            return "\(nsError.localizedDescription) (\(nsError.domain) \(nsError.code))"
+        }
+        return "\(nsError.domain) \(nsError.code)"
     }
 
     private static let instructions = """
@@ -364,17 +419,24 @@ final class MacVoiceAgent {
     The user speaks naturally. Respond with short spoken updates and execute tools only when they help.
 
     # Tool Availability
-    Available tools are exactly: shell_exec, open_app, open_url, show_app, type_text, press_key, read_screen, list_apps.
+    Available tools are exactly: shell_exec, open_app, open_url, show_app, type_text, press_key, scroll_app, read_screen, inspect_app, click_text, list_apps, list_windows, get_clipboard, set_clipboard, web_search, open_codex, codex_task.
     Do not mention or pretend to use unavailable tools.
     Only say an action is complete after the relevant tool output confirms it.
 
     # Local Action Rules
-    - Use read_screen only when the current visible UI is needed.
+    - Use read_screen or list_windows when the current visible UI is needed.
+    - Use inspect_app before clicking unclear UI controls in an app.
+    - Use click_text for simple labeled controls.
+    - Use scroll_app for page movement in a visible app.
     - Use open_app to launch apps.
     - Use show_app when the user asks to bring an app to the front.
     - Use open_url to open websites or browser destinations.
+    - Use web_search for search requests.
+    - Use get_clipboard and set_clipboard for clipboard tasks.
     - Use type_text and press_key only after the target app is visible and the destination field is focused.
     - Use shell_exec for local commands. Read-only commands may run directly. Mutating or risky commands may require user approval.
+    - Use open_codex when the user asks to work with Codex Desktop or wants a prompt prepared there.
+    - Use codex_task for codebase analysis, repository work, implementation planning, reviews, and development tasks. Prefer mode read_only unless the user explicitly asks Codex to change files.
     - If approval is needed, briefly tell the user what needs approval and wait.
 
     # Safety
@@ -382,8 +444,22 @@ final class MacVoiceAgent {
     If the user asks for something ambiguous, ask one short clarification.
 
     # Voice Style
-    Speak in the user's language.
+    Default to Spanish for confirmations and local action updates unless the user explicitly asks for another language.
     Be direct and brief.
     Avoid filler. Avoid long explanations during tool use.
     """
+}
+
+private enum MacAgentRuntimeError: LocalizedError {
+    case audioOutput(String)
+    case microphoneInput(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .audioOutput(let detail):
+            "Speaker output failed to start: \(detail)"
+        case .microphoneInput(let detail):
+            "Microphone input failed to start: \(detail)"
+        }
+    }
 }

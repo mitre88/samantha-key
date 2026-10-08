@@ -16,13 +16,13 @@ final class EntitlementStore {
     }
 
     @ObservationIgnored
-    nonisolated(unsafe) private var updatesTask: Task<Void, Never>?
+    private var updatesTask: Task<Void, Never>?
 
     init() {
         updatesTask = listenForTransactions()
     }
 
-    deinit {
+    isolated deinit {
         updatesTask?.cancel()
     }
 

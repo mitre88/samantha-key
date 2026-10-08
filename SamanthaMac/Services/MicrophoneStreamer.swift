@@ -1,7 +1,9 @@
 @preconcurrency import AVFoundation
+@preconcurrency import AVFAudio
 import Foundation
 
 final class MicrophoneStreamer: @unchecked Sendable {
+    private let inputGain: Float = 2.4
     private let engine = AVAudioEngine()
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatInt16,
@@ -10,6 +12,23 @@ final class MicrophoneStreamer: @unchecked Sendable {
         interleaved: true
     )!
     private var converter: AVAudioConverter?
+
+    static func requestMicrophoneAccess() async -> Bool {
+        switch AVAudioApplication.shared.recordPermission {
+        case .granted:
+            return true
+        case .undetermined:
+            return await withCheckedContinuation { continuation in
+                AVAudioApplication.requestRecordPermission { granted in
+                    continuation.resume(returning: granted)
+                }
+            }
+        case .denied:
+            return false
+        @unknown default:
+            return false
+        }
+    }
 
     func start(onChunk: @escaping @Sendable (Data) -> Void) throws {
         stop()
@@ -59,7 +78,29 @@ final class MicrophoneStreamer: @unchecked Sendable {
         let byteCount = Int(outputBuffer.frameLength) * Int(targetFormat.streamDescription.pointee.mBytesPerFrame)
         guard byteCount > 0,
               let dataPointer = outputBuffer.audioBufferList.pointee.mBuffers.mData else { return nil }
-        return Data(bytes: dataPointer, count: byteCount)
+        let data = Data(bytes: dataPointer, count: byteCount)
+        return amplifyPCM16(data)
+    }
+
+    private func amplifyPCM16(_ data: Data) -> Data {
+        guard inputGain != 1, data.count >= 2 else { return data }
+        let sampleCount = data.count / MemoryLayout<Int16>.size
+        var amplified = Data(count: sampleCount * MemoryLayout<Int16>.size)
+
+        data.withUnsafeBytes { sourceRawBuffer in
+            amplified.withUnsafeMutableBytes { destinationRawBuffer in
+                let source = sourceRawBuffer.bindMemory(to: Int16.self)
+                let destination = destinationRawBuffer.bindMemory(to: Int16.self)
+
+                for index in 0..<sampleCount {
+                    let sample = Int16(littleEndian: source[index])
+                    let boosted = Int(Float(sample) * inputGain)
+                    destination[index] = Int16(clamping: boosted).littleEndian
+                }
+            }
+        }
+
+        return amplified
     }
 }
 
